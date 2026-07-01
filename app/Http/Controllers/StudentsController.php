@@ -112,25 +112,32 @@ class StudentsController extends Controller
                     'other'  => '<span class="badge bg-secondary">Other</span>',
                 ];
                 return $map[$gender] ?? '<span class="badge bg-secondary">N/A</span>';
-            })
+                            })->addColumn('fee_status', function ($row) {
+    if (!$row->student) {
+        return '<span class="badge bg-secondary">N/A</span>';
+    }
 
-            ->addColumn('fee_status', function ($row) {
-                if (!$row->student) {
-                    return '<span class="badge bg-secondary">N/A</span>';
-                }
-                $fee = $row->student->fees->first();
-                if (!$fee) {
-                    return '<span class="badge bg-secondary">No Fee</span>';
-                }
-                $status = strtolower($fee->status);
-                $map = [
-                    'pending' => '<span class="badge bg-warning text-dark">Pending</span>',
-                    'paid'    => '<span class="badge bg-success">Paid</span>',
-                    'overdue' => '<span class="badge bg-danger">Overdue</span>',
-                    'partial' => '<span class="badge bg-info text-dark">Partial</span>',
-                ];
-                return $map[$status] ?? '<span class="badge bg-secondary">' . ucfirst($status) . '</span>';
-            })
+    // ✅ Current month ki fee fetch karein
+    $currentMonth = now()->format('F Y');  // e.g., "July 2026"
+    $fee = $row->student->fees()
+        ->where('fee_type', 'LIKE', "%{$currentMonth}%")
+        ->first();
+
+    if (!$fee) {
+        return '<span class="badge bg-secondary">No Fee</span>';
+    }
+
+    // ✅ Status check karein
+    if ($fee->status === 'paid') {
+        return '<span class="badge bg-success">Paid</span>';
+    }
+
+    if ($fee->status === 'pending') {
+        return '<span class="badge bg-warning text-dark">Pending</span>';
+    }
+
+    return '<span class="badge bg-secondary">' . ucfirst($fee->status) . '</span>';
+})
 
             ->addColumn('actions', function ($row) {
                 $viewBtn   = '<button class="btn btn-sm btn-outline-info view-student-btn"

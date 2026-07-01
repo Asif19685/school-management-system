@@ -119,38 +119,32 @@
     </div>
 </li>
 
-<!-- Employees Module -->
+
+<!-- Teachers Module -->
 <li>
-    <a href="#collapse-employees"
+    <a href="#collapse-teachers"
        data-bs-toggle="collapse"
        role="button"
-       aria-expanded="{{ request()->is('employees*') ? 'true' : 'false' }}"
-       aria-controls="collapse-employees"
-       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('employees*') ? 'active' : '' }}">
+       aria-expanded="{{ request()->is('teachers*') ? 'true' : 'false' }}"
+       aria-controls="collapse-teachers"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('teachers*') ? 'active' : '' }}">
         <span>
-            <i class="bi bi-person-badge"></i> Employees
+            <i class="bi bi-person-badge"></i> Teachers
         </span>
         <i class="bi bi-chevron-down toggle-icon ms-2 small"></i>
     </a>
-    <div class="collapse {{ request()->is('employees*') ? 'show' : '' }}" id="collapse-employees">
+    <div class="collapse {{ request()->is('teachers*') ? 'show' : '' }}" id="collapse-teachers">
         <ul class="list-group submenu-list" style="list-style: none; padding-left: 0;">
             <li>
-                <a href="#"
-                   data-bs-toggle="modal" data-bs-target="#createEmployeeModal"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0">
+                <a href="{{ route('teachers.create') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('teachers.create') ? 'active fw-bold' : '' }}">
                     <i class="bi bi-plus-circle-fill me-2" style="font-size: 0.8rem;"></i> Create
                 </a>
             </li>
             <li>
-                <a href="{{ route('employees.index') }}"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('employees.index') ? 'active fw-bold' : '' }}">
-                    <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Employee List
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('employees.index') }}?view=reports"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->get('view') === 'reports' ? 'active fw-bold' : '' }}">
-                    <i class="bi bi-file-earmark-bar-graph me-2" style="font-size: 0.8rem;"></i> Reports
+                <a href="{{ route('teachers.index') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('teachers.index') ? 'active fw-bold' : '' }}">
+                    <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Teacher List
                 </a>
             </li>
         </ul>
@@ -249,9 +243,8 @@
     <div class="collapse {{ request()->is('visitors*') ? 'show' : '' }}" id="collapse-visitors">
         <ul class="list-group submenu-list" style="list-style: none; padding-left: 0;">
             <li>
-                <a href="#"
-                   data-bs-toggle="modal" data-bs-target="#createVisitorModal"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0">
+                <a href="{{ route('visitors.create') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('visitors.create') ? 'active fw-bold' : '' }}">
                     <i class="bi bi-plus-circle-fill me-2" style="font-size: 0.8rem;"></i> Create
                 </a>
             </li>

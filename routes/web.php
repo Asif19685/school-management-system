@@ -18,7 +18,7 @@ use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\FeesController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ExamsController;
-use App\Http\Controllers\EmployeesController;
+use App\Http\Controllers\TeachersController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\LibraryController;
@@ -76,10 +76,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/{studentId}/fees/submit', [FeesController::class, 'submitFee'])->name('fees.submit');
     });
 
-    // ============ EMPLOYEES MODULE ============
-    Route::prefix('employees')->name('employees.')->group(function () {
-        Route::get('/', [EmployeesController::class, 'index'])->name('index');
-        Route::get('/data', [EmployeesController::class, 'getEmployeesData'])->name('data');
+    // ============ TEACHERS MODULE ============
+    Route::prefix('teachers')->name('teachers.')->group(function () {
+        Route::get('/', [TeachersController::class, 'index'])->name('index');
+        Route::get('/data', [TeachersController::class, 'getTeachersData'])->name('data');
+        Route::get('/create', [TeachersController::class, 'create'])->name('create');
+        Route::post('/', [TeachersController::class, 'store'])->name('store');
+        Route::get('/{id}', [TeachersController::class, 'show'])->name('show');
+        Route::put('/{id}', [TeachersController::class, 'update'])->name('update');
+        Route::delete('/{id}', [TeachersController::class, 'destroy'])->name('destroy');
     });
 
     // ============ COURSES MODULE ============
@@ -98,6 +103,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('visitors')->name('visitors.')->group(function () {
         Route::get('/', [VisitorsController::class, 'index'])->name('index');
         Route::get('/data', [VisitorsController::class, 'getVisitorsData'])->name('data');
+        Route::get('/create', [VisitorsController::class, 'create'])->name('create');
+        Route::post('/', [VisitorsController::class, 'store'])->name('store');
+        Route::get('/{id}', [VisitorsController::class, 'show'])->name('show');
+        Route::put('/{id}', [VisitorsController::class, 'update'])->name('update');
+        Route::delete('/{id}', [VisitorsController::class, 'destroy'])->name('destroy');
     });
 
     // ============ ATTENDANCE MODULE ============
