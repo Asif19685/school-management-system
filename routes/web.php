@@ -71,9 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('students')->name('students.')->group(function () {
         Route::get('/', [StudentsController::class, 'index'])->name('index');
         Route::get('/data', [StudentsController::class, 'getStudentsData'])->name('data');
-        Route::get('/{id}/show', [StudentsController::class, 'show'])->name('show');
-        Route::get('/{studentId}/fees', [FeesController::class, 'getStudentFees'])->name('fees');
-        Route::post('/{studentId}/fees/submit', [FeesController::class, 'submitFee'])->name('fees.submit');
+        Route::post('/attendance/mark', [StudentsController::class, 'markAttendance'])->name('attendance.mark');
     });
 
     // ============ TEACHERS MODULE ============
@@ -97,6 +95,9 @@ Route::middleware('auth')->group(function () {
     Route::prefix('fees')->name('fees.')->group(function () {
         Route::get('/', [FeesController::class, 'index'])->name('index');
         Route::get('/data', [FeesController::class, 'getFeesData'])->name('data');
+        Route::get('/{studentId}/student-fees', [FeesController::class, 'getStudentFees'])->name('student.fees');
+        Route::post('/{studentId}/submit', [FeesController::class, 'submitFee'])->name('submit');
+        Route::get('/{id}/student-detail', [FeesController::class, 'showStudentDetail'])->name('student.detail');
     });
 
     // ============ VISITORS MODULE ============
@@ -114,6 +115,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::get('/', [AttendanceController::class, 'index'])->name('index');
         Route::get('/data', [AttendanceController::class, 'getAttendanceData'])->name('data');
+        Route::get('/summary', [AttendanceController::class, 'getDailySummary'])->name('summary');
+        Route::post('/mark', [AttendanceController::class, 'markAttendance'])->name('mark');
     });
 
     // ============ EXAMS MODULE ============
