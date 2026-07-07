@@ -30,4 +30,11 @@ class Teacher extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function attendances() {
+    return $this->hasMany(TeacherAttendance::class);
+}
+public function salaries() {
+    return $this->hasMany(Salary::class);
+}
 }
