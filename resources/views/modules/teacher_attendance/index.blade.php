@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
-@section('title', 'Student Daily Attendance - School Management System')
-@section('header-title', 'Student Attendance')
+@section('title', 'Teacher Daily Attendance - School Management System')
+@section('header-title', 'Teacher Attendance')
 
 @section('content')
 <div class="row mb-4">
@@ -9,7 +9,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb m-0 bg-transparent p-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Student Attendance</li>
+                <li class="breadcrumb-item active" aria-current="page">Teacher Attendance</li>
             </ol>
         </nav>
         <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm">
@@ -25,22 +25,13 @@
             <div class="stat-icon me-3 bg-purple-light" style="width:48px;height:48px;font-size:1.3rem;">
                 <i class="bi bi-funnel"></i>
             </div>
-            <h5 class="fw-bold m-0 text-dark">Filter Student Attendance</h5>
+            <h5 class="fw-bold m-0 text-dark">Filter Teacher Attendance</h5>
         </div>
         <div class="row g-3 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-8">
                 <label class="form-label fw-semibold small">Date</label>
                 <input type="date" id="filter_date" class="form-control"
                        value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-semibold small">Class</label>
-                <select id="filter_class" class="form-select">
-                    <option value="">All Classes</option>
-                    @foreach($classes as $class)
-                        <option value="{{ $class->id }}">{{ $class->class_name }}</option>
-                    @endforeach
-                </select>
             </div>
             <div class="col-md-4">
                 <button id="apply_filter_btn" class="btn btn-primary w-100">
@@ -53,25 +44,37 @@
 
 {{-- ── Summary Cards ─────────────────────────────────────────────────────── --}}
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-2">
         <div class="card border-0 shadow-sm text-center p-3">
             <div class="fs-2 fw-bold text-primary" id="summary_total">–</div>
-            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-people me-1"></i>Total Students</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-people me-1"></i>Total Teachers</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-2">
         <div class="card border-0 shadow-sm text-center p-3">
             <div class="fs-2 fw-bold text-success" id="summary_present">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-check-circle me-1"></i>Present</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-2">
         <div class="card border-0 shadow-sm text-center p-3">
             <div class="fs-2 fw-bold text-danger" id="summary_absent">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-x-circle me-1"></i>Absent</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3">
+            <div class="fs-2 fw-bold text-info" id="summary_halfday">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-clock me-1"></i>Half-Day</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3">
+            <div class="fs-2 fw-bold text-warning" id="summary_leave">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-calendar2-x me-1"></i>Leave</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
         <div class="card border-0 shadow-sm text-center p-3">
             <div class="fs-2 fw-bold text-secondary" id="summary_not_marked">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-dash-circle me-1"></i>Not Marked</div>
@@ -87,7 +90,7 @@
                 <i class="bi bi-calendar-check"></i>
             </div>
             <div>
-                <h5 class="fw-bold m-0 text-dark">Daily Student Attendance Record</h5>
+                <h5 class="fw-bold m-0 text-dark">Daily Teacher Attendance Record</h5>
                 <p class="text-muted m-0 small" id="report_date_label">Today: {{ date('d M Y') }}</p>
             </div>
         </div>
@@ -98,15 +101,18 @@
                     <tr>
                         <th>#</th>
                         <th>Photo</th>
-                        <th>Student Name</th>
-                        <th>Class</th>
-                        <th>Section</th>
-                        <th>Roll No</th>
+                        <th>Code</th>
+                        <th>Teacher Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Date </th>
+                        <th>Check-In/Out</th>
                         <th>Attendance Status</th>
+
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Server-side DataTables -->
+                    <!-- DataTables will populate -->
                 </tbody>
             </table>
         </div>
@@ -123,57 +129,60 @@
 <script>
 $(document).ready(function() {
 
-    // ── DataTable setup ─────────────────────────────────────────────────────
+    // ── DataTable Setup ─────────────────────────────────────────────────────
     var table = $('#attendanceTable').DataTable({
         processing: true,
         serverSide: true,
         ordering:   true,
-        order:      [[2, 'asc']],
+        order:      [[3, 'asc']],
         pageLength: 25,
         ajax: {
-            url:  "{{ route('attendance.data') }}",
+            url:  "{{ route('teacher-attendance.data') }}",
             type: 'GET',
             data: function(d) {
-                d.date     = $('#filter_date').val();
-                d.class_id = $('#filter_class').val();
+                d.date = $('#filter_date').val();
             }
         },
         columns: [
             { data: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'photo',        orderable: false, searchable: false },
-            { data: 'student_name', name: 'student_name' },
-            { data: 'class',        name: 'schoolClass.class_name' },
-            { data: 'section',      name: 'section.section_name' },
-            { data: 'roll_no',      name: 'roll_no' },
+            { data: 'teacher_code', name: 'teacher_code' },
+            { data: 'name',         name: 'name' },
+            { data: 'email',        name: 'email' },
+            { data: 'phone',        name: 'phone' },
+          { data: 'attendance_date', name: 'attendance_date', orderable: true },
+            { data: 'check_in_out', name: 'check_in_out', orderable: false, searchable: false },
             { data: 'status',       orderable: false, searchable: false },
+
         ],
         language: {
             processing:  '<div class="spinner-border text-primary"></div>',
             search:      'Search:',
-            zeroRecords: 'No students found for selected filters.',
-            info:        'Showing _START_ to _END_ of _TOTAL_ students',
+            zeroRecords: 'No teachers found for selected filters.',
+            info:        'Showing _START_ to _END_ of _TOTAL_ teachers',
         }
     });
 
-    // ── Summary loader ───────────────────────────────────────────────────────
+    // ── Summary Loader ───────────────────────────────────────────────────────
     function loadSummary() {
         $.ajax({
-            url:  "{{ route('attendance.summary') }}",
+            url:  "{{ route('teacher-attendance.summary') }}",
             type: 'GET',
             data: {
-                date:     $('#filter_date').val(),
-                class_id: $('#filter_class').val()
+                date: $('#filter_date').val()
             },
             success: function(data) {
                 $('#summary_total').text(data.total);
                 $('#summary_present').text(data.present);
                 $('#summary_absent').text(data.absent);
+                $('#summary_halfday').text(data.halfDay);
+                $('#summary_leave').text(data.leave);
                 $('#summary_not_marked').text(data.notMarked);
             }
         });
     }
 
-    // ── Apply filter button ───────────────────────────────────────────────────
+    // ── Apply Filter Button ───────────────────────────────────────────────────
     $('#apply_filter_btn').on('click', function() {
         let dateVal  = $('#filter_date').val();
         let dateDisp = dateVal
@@ -184,57 +193,83 @@ $(document).ready(function() {
         loadSummary();
     });
 
-    // ── Edit attendance button ────────────────────────────────────────────────
+    // ── Edit Attendance Button ────────────────────────────────────────────────
     $(document).on('click', '.edit-attendance-btn', function() {
         let btn = $(this);
-        let studentId = btn.data('student-id');
+        let teacherId = btn.data('teacher-id');
         let current = btn.data('current');
         let dateVal = btn.data('date') || $('#filter_date').val();
 
-        let displayStatus = current === 'none' ? 'Not Marked' : current.charAt(0).toUpperCase() + current.slice(1);
+        let initialCheckIn = btn.data('check-in') || '08:00';
+        let initialCheckOut = btn.data('check-out') || '14:00';
+
+        let displayStatus = current === 'none' ? 'Not Marked' : current;
 
         Swal.fire({
-            title: 'Update Attendance',
+            title: 'Update Teacher Attendance',
             html: `
                 <div class="text-muted mb-3 small">Date: <strong>${dateVal}</strong> | Current Status: <strong>${displayStatus}</strong></div>
-                <div class="d-flex flex-column gap-2">
-                    <button id="sa-present-btn" class="btn btn-success py-2"><i class="bi bi-check-circle me-1"></i> Mark Present</button>
-                    <button id="sa-absent-btn" class="btn btn-danger py-2"><i class="bi bi-x-circle me-1"></i> Mark Absent</button>
-                    <button id="sa-leave-btn" class="btn btn-warning py-2 text-dark"><i class="bi bi-calendar2-x me-1"></i> Mark Leave</button>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-start d-block">Select Attendance Status</label>
+                    <select id="swal_status" class="form-select">
+                        <option value="Present" ${current === 'Present' ? 'selected' : ''}>✅ Present</option>
+                        <option value="Absent" ${current === 'Absent' ? 'selected' : ''}>❌ Absent</option>
+                        <option value="Leave" ${current === 'Leave' ? 'selected' : ''}>⚠️ Leave</option>
+                        <option value="Half-Day" ${current === 'Half-Day' ? 'selected' : ''}>⏰ Half-Day</option>
+                    </select>
+                </div>
+
+                <div id="swal_time_fields" style="display: ${['Present', 'Half-Day', 'none'].includes(current) || current === 'none' ? 'block' : 'none'};">
+                    <div class="row g-2">
+                        <div class="col-6 text-start">
+                            <label class="form-label small text-muted">Check-In Time</label>
+                            <input type="time" id="swal_check_in" class="form-control" value="${initialCheckIn}">
+                        </div>
+                        <div class="col-6 text-start">
+                            <label class="form-label small text-muted">Check-Out Time</label>
+                            <input type="time" id="swal_check_out" class="form-control" value="${initialCheckOut}">
+                        </div>
+                    </div>
                 </div>
             `,
-            showConfirmButton: false,
             showCancelButton: true,
+            confirmButtonText: '<i class="bi bi-save me-1"></i> Save',
             cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3085d6',
+            preConfirm: () => {
+                let status = document.getElementById('swal_status').value;
+                let checkIn = document.getElementById('swal_check_in').value;
+                let checkOut = document.getElementById('swal_check_out').value;
+                return { status, checkIn, checkOut };
+            },
             didOpen: () => {
-                const content = Swal.getHtmlContainer();
-                
-                content.querySelector('#sa-present-btn').addEventListener('click', () => {
-                    Swal.close();
-                    saveAttendance('present');
+                // Toggle time fields dynamically based on status choice
+                document.getElementById('swal_status').addEventListener('change', function() {
+                    let fields = document.getElementById('swal_time_fields');
+                    if (['Present', 'Half-Day'].includes(this.value)) {
+                        $(fields).slideDown();
+                    } else {
+                        $(fields).slideUp();
+                    }
                 });
-                
-                content.querySelector('#sa-absent-btn').addEventListener('click', () => {
-                    Swal.close();
-                    saveAttendance('absent');
-                });
-                
-                content.querySelector('#sa-leave-btn').addEventListener('click', () => {
-                    Swal.close();
-                    saveAttendance('leave');
-                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                saveAttendance(result.value.status, result.value.checkIn, result.value.checkOut);
             }
         });
 
-        function saveAttendance(status) {
+        function saveAttendance(status, checkIn, checkOut) {
             $.ajax({
-                url: "{{ route('attendance.mark') }}",
+                url: "{{ route('teacher-attendance.mark') }}",
                 method: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
-                    student_id: studentId,
+                    teacher_id: teacherId,
                     status: status,
-                    date: dateVal
+                    date: dateVal,
+                    check_in: checkIn,
+                    check_out: checkOut
                 },
                 success: function(response) {
                     if (response.success) {
@@ -257,7 +292,7 @@ $(document).ready(function() {
         }
     });
 
-    // ── Load summary on page load ─────────────────────────────────────────────
+    // ── Load Summary on Page Load ─────────────────────────────────────────────
     loadSummary();
 });
 </script>

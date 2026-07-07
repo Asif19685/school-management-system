@@ -125,15 +125,15 @@
     <a href="#collapse-teachers"
        data-bs-toggle="collapse"
        role="button"
-       aria-expanded="{{ request()->is('teachers*') ? 'true' : 'false' }}"
+       aria-expanded="{{ request()->is('teachers*') || request()->is('salaries*') ? 'true' : 'false' }}"
        aria-controls="collapse-teachers"
-       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('teachers*') ? 'active' : '' }}">
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('teachers*') || request()->is('salaries*') ? 'active' : '' }}">
         <span>
             <i class="bi bi-person-badge"></i> Teachers
         </span>
         <i class="bi bi-chevron-down toggle-icon ms-2 small"></i>
     </a>
-    <div class="collapse {{ request()->is('teachers*') ? 'show' : '' }}" id="collapse-teachers">
+    <div class="collapse {{ request()->is('teachers*') || request()->is('salaries*') ? 'show' : '' }}" id="collapse-teachers">
         <ul class="list-group submenu-list" style="list-style: none; padding-left: 0;">
             <li>
                 <a href="{{ route('teachers.create') }}"
@@ -145,6 +145,12 @@
                 <a href="{{ route('teachers.index') }}"
                    class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('teachers.index') ? 'active fw-bold' : '' }}">
                     <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Teacher List
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('salaries.index') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('salaries.index') ? 'active fw-bold' : '' }}">
+                    <i class="bi bi-cash me-2" style="font-size: 0.8rem;"></i> Salaries
                 </a>
             </li>
         </ul>
@@ -269,33 +275,26 @@
     <a href="#collapse-attendance"
        data-bs-toggle="collapse"
        role="button"
-       aria-expanded="{{ request()->is('attendance*') ? 'true' : 'false' }}"
+       aria-expanded="{{ request()->is('attendance*') || request()->is('teacher-attendance*') ? 'true' : 'false' }}"
        aria-controls="collapse-attendance"
-       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('attendance*') ? 'active' : '' }}">
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('attendance*') || request()->is('teacher-attendance*') ? 'active' : '' }}">
         <span>
             <i class="bi bi-calendar-check"></i> Attendance
         </span>
         <i class="bi bi-chevron-down toggle-icon ms-2 small"></i>
     </a>
-    <div class="collapse {{ request()->is('attendance*') ? 'show' : '' }}" id="collapse-attendance">
+    <div class="collapse {{ request()->is('attendance*') || request()->is('teacher-attendance*') ? 'show' : '' }}" id="collapse-attendance">
         <ul class="list-group submenu-list" style="list-style: none; padding-left: 0;">
-            <li>
-                <a href="#"
-                   data-bs-toggle="modal" data-bs-target="#createAttendanceModal"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0">
-                    <i class="bi bi-plus-circle-fill me-2" style="font-size: 0.8rem;"></i> Create
-                </a>
-            </li>
             <li>
                 <a href="{{ route('attendance.index') }}"
                    class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('attendance.index') ? 'active fw-bold' : '' }}">
-                    <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Attendance List
+                    <i class="bi bi-person me-2" style="font-size: 0.8rem;"></i> Student Attendance
                 </a>
             </li>
             <li>
-                <a href="{{ route('attendance.index') }}?view=reports"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->get('view') === 'reports' ? 'active fw-bold' : '' }}">
-                    <i class="bi bi-file-earmark-bar-graph me-2" style="font-size: 0.8rem;"></i> Reports
+                <a href="{{ route('teacher-attendance.index') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('teacher-attendance.index') ? 'active fw-bold' : '' }}">
+                    <i class="bi bi-person-badge me-2" style="font-size: 0.8rem;"></i> Teacher Attendance
                 </a>
             </li>
         </ul>

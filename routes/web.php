@@ -23,6 +23,8 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\RolesController;
+use App\Http\Controllers\TeacherAttendanceController;
+use App\Http\Controllers\SalariesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -117,6 +119,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/data', [AttendanceController::class, 'getAttendanceData'])->name('data');
         Route::get('/summary', [AttendanceController::class, 'getDailySummary'])->name('summary');
         Route::post('/mark', [AttendanceController::class, 'markAttendance'])->name('mark');
+    });
+
+    // ============ TEACHER ATTENDANCE MODULE ============
+    Route::prefix('teacher-attendance')->name('teacher-attendance.')->group(function () {
+        Route::get('/', [TeacherAttendanceController::class, 'index'])->name('index');
+        Route::get('/data', [TeacherAttendanceController::class, 'getAttendanceData'])->name('data');
+        Route::get('/summary', [TeacherAttendanceController::class, 'getDailySummary'])->name('summary');
+        Route::post('/mark', [TeacherAttendanceController::class, 'markAttendance'])->name('mark');
+    });
+
+    // ============ SALARIES MODULE ============
+    Route::prefix('salaries')->name('salaries.')->group(function () {
+        Route::get('/', [SalariesController::class, 'index'])->name('index');
+        Route::get('/data', [SalariesController::class, 'getSalariesData'])->name('data');
+        Route::post('/generate', [SalariesController::class, 'generateMonthlySalary'])->name('generate');
+        Route::put('/{id}', [SalariesController::class, 'update'])->name('update');
+        Route::post('/{id}/pay', [SalariesController::class, 'paySalary'])->name('pay');
     });
 
     // ============ EXAMS MODULE ============
