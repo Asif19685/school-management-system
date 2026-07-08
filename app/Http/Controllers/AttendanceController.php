@@ -23,8 +23,9 @@ class AttendanceController extends Controller
      */
     public function getAttendanceData(Request $request)
     {
-        $date    = $request->input('date', today()->toDateString());
-        $classId = $request->input('class_id');
+        $date         = $request->input('date', today()->toDateString());
+        $classId      = $request->input('class_id');
+        $statusFilter = $request->input('status_filter', 'all');
 
         // All approved admissions with student and today's attendance
         $query = StudentAdmission::with([
@@ -38,6 +39,16 @@ class AttendanceController extends Controller
 
         if ($classId) {
             $query->where('class_id', $classId);
+        }
+
+        // Filter by attendance status (card click)
+        if ($statusFilter !== 'all') {
+            if ($statusFilter === 'not_marked') {
+                $markedStudentIds = \App\Models\Attendance::whereDate('attendance_date', $date)->pluck('student_id');
+                $query->whereHas('student', fn($q) => $q->whereNotIn('id', $markedStudentIds));
+            } else {
+                $query->whereHas('student.attendances', fn($q) => $q->whereDate('attendance_date', $date)->where('status', $statusFilter));
+            }
         }
 
         return DataTables::of($query)

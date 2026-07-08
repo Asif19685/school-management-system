@@ -15,10 +15,10 @@ class SalariesController extends Controller
 {
     public function index(): View
     {
-        // Get all unique month_year strings from database to populate filter
         $availableMonths = Salary::distinct()->orderBy('month_year', 'desc')->pluck('month_year');
-        
-        return view('modules.salaries.index', compact('availableMonths'));
+        $totalTeachers = Teacher::count(); // For stats card
+
+        return view('modules.salaries.index', compact('availableMonths', 'totalTeachers'));
     }
 
     /**
@@ -27,10 +27,16 @@ class SalariesController extends Controller
     public function getSalariesData(Request $request)
     {
         $monthYear = $request->input('month_year', Carbon::now()->format('m-Y'));
+        $statusFilter = $request->input('status_filter', 'all');
 
         $query = Salary::with('teacher')
             ->where('month_year', $monthYear)
             ->select('salaries.*');
+
+        // Apply status filter
+        if ($statusFilter !== 'all' && !empty($statusFilter)) {
+            $query->where('status', $statusFilter);
+        }
 
         return DataTables::of($query)
             ->addIndexColumn()
@@ -57,7 +63,7 @@ class SalariesController extends Controller
                 if ($row->status !== 'Paid') {
                     $payBtn = '<button class="btn btn-sm btn-success pay-salary-btn me-1" data-id="' . $row->id . '" title="Pay Now"><i class="bi bi-cash"></i> Pay</button>';
                 }
-                
+
                 $editBtn = '<button class="btn btn-sm btn-outline-primary edit-salary-btn me-1" data-id="' . $row->id . '" '
                     . 'data-teacher="' . htmlspecialchars($row->teacher->name ?? 'N/A') . '" '
                     . 'data-base="' . $row->base_salary . '" '
@@ -91,10 +97,9 @@ class SalariesController extends Controller
     public function generateMonthlySalary(Request $request)
     {
         $request->validate([
-            'month_year' => 'required|string', // Format expected: "YYYY-MM" from date input
+            'month_year' => 'required|string',
         ]);
 
-        // Parse YYYY-MM into MM-YYYY
         try {
             $parsedDate = Carbon::parse($request->input('month_year') . '-01');
             $monthYearStr = $parsedDate->format('m-Y');
@@ -119,7 +124,6 @@ class SalariesController extends Controller
         DB::beginTransaction();
         try {
             foreach ($teachers as $teacher) {
-                // Fetch attendance statistics for this teacher for the selected month/year
                 $attendances = TeacherAttendance::where('teacher_id', $teacher->id)
                     ->whereYear('date', $year)
                     ->whereMonth('date', $month)
@@ -130,20 +134,12 @@ class SalariesController extends Controller
                 $totalHalfDays = $attendances->where('status', 'Half-Day')->count();
 
                 $baseSalary = $teacher->salary ?: 0.00;
-
-                // Default deduction calculation:
-                // Base deduction on daily rate (base salary divided by 30 days)
-                // Absent = full daily rate deduction, Half-day = half daily rate deduction
                 $dailyRate = $baseSalary / 30;
                 $deductions = ($dailyRate * $totalAbsent) + (($dailyRate / 2) * $totalHalfDays);
                 $deductions = round($deductions, 2);
 
-                $netSalary = $baseSalary - $deductions;
-                if ($netSalary < 0) {
-                    $netSalary = 0.00;
-                }
+                $netSalary = max(0, $baseSalary - $deductions);
 
-                // Find or update salary record. Don't overwrite paid status unless forced
                 $existingSalary = Salary::where('teacher_id', $teacher->id)
                     ->where('month_year', $monthYearStr)
                     ->first();
@@ -217,7 +213,7 @@ class SalariesController extends Controller
     public function paySalary($id)
     {
         $salary = Salary::findOrFail($id);
-        
+
         $salary->update(['status' => 'Paid']);
 
         return response()->json([
