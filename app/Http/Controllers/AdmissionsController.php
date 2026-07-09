@@ -36,6 +36,23 @@ class AdmissionsController extends Controller
     $students = StudentAdmission::with(['student', 'schoolClass', 'section', 'appliedClass'])
         ->select('student_admissions.*');
 
+    // Class-wise filter
+    if ($request->filled('class_filter') && $request->class_filter !== 'all') {
+        $classId = $request->class_filter;
+        $students->where(function($q) use ($classId) {
+            $q->where('class_id', $classId)
+              ->orWhere('applied_class_id', $classId);
+        });
+    }
+
+    // Date range filter (admission_date)
+    if ($request->filled('from_date')) {
+        $students->whereDate('admission_date', '>=', $request->from_date);
+    }
+    if ($request->filled('to_date')) {
+        $students->whereDate('admission_date', '<=', $request->to_date);
+    }
+
     // 2. Custom Global Search Logic
     if ($request->has('search') && !empty($request->search['value'])) {
         $searchValue = $request->search['value'];

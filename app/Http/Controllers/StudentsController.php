@@ -32,6 +32,11 @@ public function getStudentsData(Request $request)
     ->where('status', 'approved')
     ->select('student_admissions.*');
 
+    // Class-wise filter
+    if ($request->filled('class_filter') && $request->class_filter !== 'all') {
+        $query->where('class_id', $request->class_filter);
+    }
+
     // Global search
     if ($request->has('search') && !empty($request->search['value'])) {
         $searchValue = $request->search['value'];

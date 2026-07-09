@@ -23,17 +23,63 @@
     <div class="col-12">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <div class="d-flex align-items-center mb-4">
-                    <div class="stat-icon me-3 bg-primary-light" style="width: 54px; height: 54px; font-size: 1.5rem;">
-                        <i class="bi bi-person-plus"></i>
+
+                <!-- ── Filter Bar ──────────────────────────────────────────── -->
+                <div class="p-3 bg-light rounded-3 border border-light shadow-sm mb-3">
+                    <div class="row g-2 align-items-end">
+                        <!-- Class Filter -->
+                        <div class="col-md-3 col-sm-6">
+                            <label for="class_filter" class="form-label small fw-bold mb-1 text-secondary">
+                                <i class="bi bi-mortarboard me-1"></i>Filter by Class
+                            </label>
+                            <select id="class_filter" class="form-select form-select-sm border-0 shadow-sm">
+                                <option value="all">-- All Classes --</option>
+                                @foreach($classes as $class)
+                                    <option value="{{ $class->id }}">{{ $class->class_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- From Date Filter -->
+                        <div class="col-md-3 col-sm-6">
+                            <label for="from_date" class="form-label small fw-bold mb-1 text-secondary">
+                                <i class="bi bi-calendar-date me-1"></i>From Date
+                            </label>
+                            <input type="date" id="from_date" class="form-control form-control-sm border-0 shadow-sm">
+                        </div>
+                        <!-- To Date Filter -->
+                        <div class="col-md-3 col-sm-6">
+                            <label for="to_date" class="form-label small fw-bold mb-1 text-secondary">
+                                <i class="bi bi-calendar-date me-1"></i>To Date
+                            </label>
+                            <input type="date" id="to_date" class="form-control form-control-sm border-0 shadow-sm">
+                        </div>
+                        <!-- Buttons -->
+                        <div class="col-md-2 col-6">
+                            <button type="button" id="apply_filter_btn" class="btn btn-primary btn-sm w-100 shadow-sm">
+                                <i class="bi bi-funnel-fill me-1"></i>Apply
+                            </button>
+                        </div>
+                        <div class="col-md-1 col-6">
+                            <button type="button" id="clear_filter_btn" class="btn btn-outline-secondary btn-sm w-100" title="Clear All Filters">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="fw-bold m-0 text-dark">Student Admissions</h3>
-                        <p class="text-muted mb-0">Manage all student admission records</p>
+                    <!-- Active filter badges -->
+                    <div id="active_filters_row" class="mt-2 d-none d-flex flex-wrap gap-2">
+                        <span id="active_class_badge" class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill small d-none">
+                            <i class="bi bi-mortarboard me-1"></i>Class: <strong id="active_class_name"></strong>
+                            <i class="bi bi-x ms-1" style="cursor:pointer;" onclick="clearClassFilter()"></i>
+                        </span>
+                        <span id="active_date_badge" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small d-none">
+                            <i class="bi bi-calendar-date me-1"></i>Date: <strong id="active_date_name"></strong>
+                            <i class="bi bi-x ms-1" style="cursor:pointer;" onclick="clearDateFilter()"></i>
+                        </span>
                     </div>
                 </div>
 
-                <hr class="my-4">
+                <hr class="my-3">
+
 
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="studentsTable" width="100%">
@@ -515,6 +561,11 @@ $(document).ready(function() {
         ajax: {
             url: "{{ route('admissions.data') }}",
             type: 'GET',
+            data: function(d) {
+                d.class_filter = $('#class_filter').val();
+                d.from_date    = $('#from_date').val();
+                d.to_date      = $('#to_date').val();
+            }
         },
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
@@ -547,6 +598,76 @@ $(document).ready(function() {
             $('#approval_fields').slideUp();
         }
     });
+
+    // ── Apply / Clear Filter Buttons ───────────────────────────────────────────
+    function updateActiveBadges() {
+        var classVal = $('#class_filter').val();
+        var fromDate = $('#from_date').val();
+        var toDate   = $('#to_date').val();
+        var anyActive = false;
+
+        if (classVal !== 'all') {
+            $('#active_class_name').text($('#class_filter option:selected').text().trim());
+            $('#active_class_badge').removeClass('d-none');
+            anyActive = true;
+        } else {
+            $('#active_class_badge').addClass('d-none');
+        }
+
+        if (fromDate || toDate) {
+            var formatted = '';
+            if (fromDate) {
+                var d1 = new Date(fromDate);
+                formatted += d1.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            } else {
+                formatted += 'Start';
+            }
+            formatted += ' to ';
+            if (toDate) {
+                var d2 = new Date(toDate);
+                formatted += d2.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            } else {
+                formatted += 'End';
+            }
+            $('#active_date_name').text(formatted);
+            $('#active_date_badge').removeClass('d-none');
+            anyActive = true;
+        } else {
+            $('#active_date_badge').addClass('d-none');
+        }
+
+        if (anyActive) {
+            $('#active_filters_row').removeClass('d-none');
+        } else {
+            $('#active_filters_row').addClass('d-none');
+        }
+    }
+
+    $('#apply_filter_btn').on('click', function() {
+        updateActiveBadges();
+        table.ajax.reload();
+    });
+
+    $('#clear_filter_btn').on('click', function() {
+        $('#class_filter').val('all');
+        $('#from_date').val('');
+        $('#to_date').val('');
+        updateActiveBadges();
+        table.ajax.reload();
+    });
+
+    window.clearClassFilter = function() {
+        $('#class_filter').val('all');
+        updateActiveBadges();
+        table.ajax.reload();
+    };
+
+    window.clearDateFilter = function() {
+        $('#from_date').val('');
+        $('#to_date').val('');
+        updateActiveBadges();
+        table.ajax.reload();
+    };
 
     // Process function - using url() helper
     window.processAdmission = function(id) {
