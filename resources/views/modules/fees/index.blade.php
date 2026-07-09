@@ -598,17 +598,98 @@ $(document).ready(function() {
     </div>
 </div>
 
+{{-- ── Hidden Input for Active Filter ─────────────────────────────────────── --}}
+<input type="hidden" id="active_status_filter" value="all">
+
+{{-- ── Summary Cards ─────────────────────────────────────────────────────── --}}
+<div class="row g-3 mb-4">
+    <!-- Total Students Card -->
+    <div class="col-6 col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="all" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-primary" id="summary_totalStudents">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-people me-1"></i>Total Students</div>
+        </div>
+    </div>
+
+    <!-- Paid Card -->
+    <div class="col-6 col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="paid" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-success" id="summary_paid">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-check-circle me-1"></i>Paid</div>
+        </div>
+    </div>
+
+    <!-- Pending Card -->
+    <div class="col-6 col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="pending" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-warning" id="summary_pending">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-exclamation-circle me-1"></i>Pending</div>
+        </div>
+    </div>
+
+    <!-- Partial Card -->
+    {{-- <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="partial" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-info" id="summary_partial">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-dash-circle me-1"></i>Partial</div>
+        </div>
+    </div>
+
+    <!-- Overdue Card -->
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="overdue" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-danger" id="summary_overdue">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-calendar-x me-1"></i>Overdue</div>
+        </div>
+    </div> --}}
+
+    <!-- No Fee Card -->
+    {{-- <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="no_fee" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-secondary" id="summary_noFee">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-x-circle me-1"></i>No Fee</div>
+        </div>
+    </div> --}}
+</div>
+
+{{-- ── Active Filter Label ─────────────────────────────────────────────────── --}}
+<div class="row mb-3 d-none" id="active_filter_row">
+    <div class="col-12">
+        <span class="badge bg-info text-white p-2">
+            <i class="bi bi-funnel me-1"></i> Filter: <span id="filter_status_text">All Students</span>
+        </span>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-12">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <div class="d-flex align-items-center mb-4">
-                    <div class="stat-icon me-3 bg-warning-light" style="width: 54px; height: 54px; font-size: 1.5rem;">
-                        <i class="bi bi-cash-stack"></i>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3 bg-warning-light" style="width: 54px; height: 54px; font-size: 1.5rem;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold m-0 text-dark">Fee Management</h3>
+                            <p class="text-muted mb-0">Students ki fee collect karein aur status manage karein</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="fw-bold m-0 text-dark">Fee Management</h3>
-                        <p class="text-muted mb-0">Students ki fee collect karein aur status manage karein</p>
+                    <!-- Premium Month Filter Panel -->
+                    <div class="p-3 bg-light rounded-3 border border-light shadow-sm" style="min-width: 320px;">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-7">
+                                <label for="filter_month" class="form-label small fw-bold mb-1 text-secondary">
+                                    <i class="bi bi-calendar-event me-1"></i>Select Month
+                                </label>
+                                <input type="month" id="filter_month" class="form-control form-control-sm border-0 shadow-sm" value="{{ now()->format('Y-m') }}">
+                            </div>
+                            <div class="col-5">
+                                <button type="button" id="apply_filter_btn" class="btn btn-primary btn-sm w-100 shadow-sm d-flex align-items-center justify-content-center gap-1">
+                                    <i class="bi bi-funnel-fill"></i> Apply
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -756,7 +837,14 @@ $(document).ready(function() {
     var table = $('#feesStudentsTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: { url: "{{ route('fees.data') }}", type: 'GET' },
+        ajax: {
+            url: "{{ route('fees.data') }}",
+            type: 'GET',
+            data: function(d) {
+                d.status_filter = $('#active_status_filter').val() || 'all';
+                d.filter_month = $('#filter_month').val();
+            }
+        },
         columns: [
             { data: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'student_image', orderable: false, searchable: false },
@@ -771,6 +859,63 @@ $(document).ready(function() {
         order: [[3, 'asc']],
         pageLength: 10
     });
+
+    // ── Summary loader ───────────────────────────────────────────────────────
+    function loadSummary() {
+        $.ajax({
+            url: "{{ route('fees.summary') }}",
+            type: 'GET',
+            data: {
+                filter_month: $('#filter_month').val()
+            },
+            success: function(data) {
+                $('#summary_totalStudents').text(data.totalStudents || 0);
+                $('#summary_paid').text(data.paid || 0);
+                $('#summary_pending').text(data.pending || 0);
+                $('#summary_partial').text(data.partial || 0);
+                $('#summary_overdue').text(data.overdue || 0);
+                $('#summary_noFee').text(data.noFee || 0);
+            },
+            error: function() {
+                console.log('Error loading summary');
+            }
+        });
+    }
+
+    // ── Apply Month Filter Button Click ──────────────────────────────────────
+    $('#apply_filter_btn').on('click', function() {
+        table.ajax.reload();
+        loadSummary();
+    });
+
+    // ── Status Card Click Filter ─────────────────────────────────────────────
+    $('.status-card').on('click', function() {
+        let status = $(this).data('status');
+        let statusText = $(this).find('.small.text-muted').text().trim();
+
+        // Remove active class from all cards
+        $('.status-card').removeClass('border border-primary bg-light shadow-lg');
+
+        // Add active class to clicked card
+        $(this).addClass('border border-primary bg-light shadow-lg');
+
+        // Store active filter
+        $('#active_status_filter').val(status);
+
+        // Update filter label text
+        if (status === 'all') {
+            $('#active_filter_row').addClass('d-none');
+        } else {
+            $('#filter_status_text').text(statusText);
+            $('#active_filter_row').removeClass('d-none');
+        }
+
+        // Reload table with filter
+        table.ajax.reload();
+    });
+
+    // Load initial summary
+    loadSummary();
 
     var currentFeesData = [];
 
@@ -894,6 +1039,7 @@ $(document).ready(function() {
                 if (response.success) {
                     $('#submitFeeModal').modal('hide');
                     table.ajax.reload();
+                    loadSummary();
                     Swal.fire('Success!', response.message, 'success');
                 }
             },

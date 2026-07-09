@@ -486,6 +486,9 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary me-auto" onclick="printAdmissionRecord()">
+                    <i class="bi bi-printer me-1"></i> Print Record
+                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -812,4 +815,328 @@ window.viewAdmission = function(id) {
     background-color: rgba(13, 110, 253, 0.1);
 }
 </style>
+
+<script>
+function printAdmissionRecord() {
+    // Collect all data from the view modal spans
+    var studentImage = $('#view_student_image').attr('src') || '';
+    var admissionNo   = $('#view_admission_no').text();
+    var admissionDate = $('#view_admission_date').text();
+    var status        = $('#view_status').html();
+    var appliedClass  = $('#view_applied_class').text();
+    var approvedClass = $('#view_approved_class').text();
+    var section       = $('#view_section').text();
+
+    var regNo          = $('#view_reg_no').text();
+    var studentName    = $('#view_student_name').text();
+    var gender         = $('#view_gender').text();
+    var dob            = $('#view_dob').text();
+    var religion       = $('#view_religion').text();
+    var bForm          = $('#view_b_form').text();
+    var previousClass  = $('#view_previous_class').text();
+    var previousSchool = $('#view_previous_school').text();
+
+    var fatherName       = $('#view_father_name').text();
+    var fatherCnic       = $('#view_father_cnic').text();
+    var fatherOccupation = $('#view_father_occupation').text();
+    var motherName       = $('#view_mother_name').text();
+    var guardianPhone    = $('#view_guardian_phone').text();
+    var completeAddress  = $('#view_complete_address').text();
+
+    var approvedByOfficer = $('#view_approved_by_officer').text();
+    var approvedByHead    = $('#view_approved_by_head').text();
+    var remarks           = $('#view_remarks').text();
+
+    var printDate = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    var printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admission Record - ${admissionNo}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11pt;
+            color: #222;
+            background: #fff;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 15mm 15mm 20mm 15mm;
+        }
+        .page { width: 100%; }
+
+        /* Header / School Banner */
+        .print-header {
+            text-align: center;
+            border-bottom: 3px double #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+        .print-header h1 {
+            font-size: 18pt;
+            color: #0d6efd;
+            letter-spacing: 1px;
+        }
+        .print-header p {
+            font-size: 9pt;
+            color: #555;
+            margin-top: 2px;
+        }
+        .print-header .doc-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #333;
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Student Photo + Admission No row */
+        .top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            gap: 12px;
+        }
+        .student-photo {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid #0d6efd;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .admission-badge {
+            text-align: right;
+        }
+        .admission-badge .adm-no {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .admission-badge .adm-date {
+            font-size: 9pt;
+            color: #555;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 9pt;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        .status-approved { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .status-pending  { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+        .status-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+
+        /* Section cards */
+        .section {
+            border: 1px solid #dde3ee;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        .section-header {
+            background: #f0f5ff;
+            padding: 6px 12px;
+            font-weight: bold;
+            font-size: 10pt;
+            color: #1d4ed8;
+            border-bottom: 1px solid #dde3ee;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .section-body {
+            padding: 10px 12px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px 12px;
+        }
+        .info-grid.two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+        .info-item label {
+            font-size: 8pt;
+            color: #6b7280;
+            display: block;
+            margin-bottom: 1px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .info-item span {
+            font-size: 10pt;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* Signature area */
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+        .sig-box {
+            text-align: center;
+            min-width: 130px;
+        }
+        .sig-box .sig-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 4px;
+            height: 35px;
+        }
+        .sig-box .sig-label {
+            font-size: 8.5pt;
+            color: #555;
+        }
+        .sig-box .sig-name {
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #111;
+        }
+
+        /* Footer */
+        .print-footer {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 8pt;
+            color: #9ca3af;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
+        }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- School Header -->
+    <div class="print-header">
+        <h1>&#127979; School Management System</h1>
+        <p>Official Student Admission Record</p>
+        <div class="doc-title">Admission Form</div>
+    </div>
+
+    <!-- Photo + Admission No -->
+    <div class="top-row">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <img src="${studentImage}" alt="Student Photo" class="student-photo" onerror="this.style.display='none'">
+            <div>
+                <div style="font-size:14pt; font-weight:bold; color:#111;">${studentName}</div>
+                <div style="font-size:9pt; color:#555; margin-top:3px;">Registration No: ${regNo}</div>
+            </div>
+        </div>
+        <div class="admission-badge">
+            <div class="adm-no">Adm# ${admissionNo}</div>
+            <div class="adm-date">Date: ${admissionDate}</div>
+            <span class="status-badge status-${status.includes('success') ? 'approved' : status.includes('warning') ? 'pending' : status.includes('danger') ? 'rejected' : 'pending'}">
+                ${status.replace(/<[^>]+>/g, '').trim()}
+            </span>
+        </div>
+    </div>
+
+    <!-- Admission Information -->
+    <div class="section">
+        <div class="section-header">&#127891; Admission Information</div>
+        <div class="section-body">
+            <div class="info-grid">
+                <div class="info-item"><label>Applied Class</label><span>${appliedClass}</span></div>
+                <div class="info-item"><label>Approved Class</label><span>${approvedClass}</span></div>
+                <div class="info-item"><label>Section</label><span>${section}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Details -->
+    <div class="section">
+        <div class="section-header">&#128100; Personal Details</div>
+        <div class="section-body">
+            <div class="info-grid">
+                <div class="info-item"><label>Full Name</label><span>${studentName}</span></div>
+                <div class="info-item"><label>Gender</label><span>${gender}</span></div>
+                <div class="info-item"><label>Date of Birth</label><span>${dob}</span></div>
+                <div class="info-item"><label>Religion</label><span>${religion}</span></div>
+                <div class="info-item"><label>B-Form / CNIC No</label><span>${bForm}</span></div>
+                <div class="info-item"><label>Previous Class</label><span>${previousClass}</span></div>
+            </div>
+            <div class="info-grid two-col" style="margin-top:8px;">
+                <div class="info-item" style="grid-column:1/-1;"><label>Previous School</label><span>${previousSchool}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guardian Information -->
+    <div class="section">
+        <div class="section-header">&#128106; Guardian Information</div>
+        <div class="section-body">
+            <div class="info-grid">
+                <div class="info-item"><label>Father Name</label><span>${fatherName}</span></div>
+                <div class="info-item"><label>Father CNIC</label><span>${fatherCnic}</span></div>
+                <div class="info-item"><label>Father Occupation</label><span>${fatherOccupation}</span></div>
+                <div class="info-item"><label>Mother Name</label><span>${motherName}</span></div>
+                <div class="info-item"><label>Guardian Phone</label><span>${guardianPhone}</span></div>
+            </div>
+            <div style="margin-top:8px;">
+                <div class="info-item"><label>Complete Address</label><span>${completeAddress}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remarks -->
+    <div class="section">
+        <div class="section-header">&#128203; Remarks</div>
+        <div class="section-body">
+            <div class="info-item"><span style="font-weight:normal; color:#374151;">${remarks}</span></div>
+        </div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="signature-row">
+        <div class="sig-box">
+            <div class="sig-line"></div>
+            <div class="sig-name">${approvedByOfficer || '____________________'}</div>
+            <div class="sig-label">Approved By Officer</div>
+        </div>
+        <div class="sig-box">
+            <div class="sig-line"></div>
+            <div class="sig-label">Parent / Guardian Signature</div>
+        </div>
+        <div class="sig-box">
+            <div class="sig-line"></div>
+            <div class="sig-name">${approvedByHead || '____________________'}</div>
+            <div class="sig-label">Approved By Head</div>
+        </div>
+    </div>
+
+    <!-- Print Footer -->
+    <div class="print-footer">
+        Printed on ${printDate} &bull; School Management System &bull; This is a computer-generated document.
+    </div>
+
+</div>
+</body>
+</html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(function() {
+        printWindow.print();
+    }, 500);
+}
+</script>
+
 @endpush

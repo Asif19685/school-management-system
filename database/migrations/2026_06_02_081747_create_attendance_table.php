@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('student_id')->nullable()->index();
             $table->date('attendance_date');
-            $table->enum('status', ['present', 'absent', 'leave'])->default('present')->index();
+            $table->enum('status', ['present', 'absent', 'leave', 'half-day'])->default('present')->index();
             $table->text('remarks')->nullable();
             $table->timestamps();
 

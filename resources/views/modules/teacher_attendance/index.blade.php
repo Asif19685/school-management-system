@@ -28,12 +28,12 @@
             <h5 class="fw-bold m-0 text-dark">Filter Teacher Attendance</h5>
         </div>
         <div class="row g-3 align-items-end">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <label class="form-label fw-semibold small">Date</label>
                 <input type="date" id="filter_date" class="form-control"
                        value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <button id="apply_filter_btn" class="btn btn-primary w-100">
                     <i class="bi bi-search me-1"></i> Apply Filter
                 </button>
@@ -45,37 +45,37 @@
 {{-- ── Summary Cards ─────────────────────────────────────────────────────── --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-2">
-        <div class="card border-0 shadow-sm text-center p-3">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="all" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-primary" id="summary_total">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-people me-1"></i>Total Teachers</div>
         </div>
     </div>
     <div class="col-6 col-md-2">
-        <div class="card border-0 shadow-sm text-center p-3">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="Present" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-success" id="summary_present">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-check-circle me-1"></i>Present</div>
         </div>
     </div>
     <div class="col-6 col-md-2">
-        <div class="card border-0 shadow-sm text-center p-3">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="Absent" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-danger" id="summary_absent">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-x-circle me-1"></i>Absent</div>
         </div>
     </div>
     <div class="col-6 col-md-2">
-        <div class="card border-0 shadow-sm text-center p-3">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="Half-Day" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-info" id="summary_halfday">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-clock me-1"></i>Half-Day</div>
         </div>
     </div>
     <div class="col-6 col-md-2">
-        <div class="card border-0 shadow-sm text-center p-3">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="Leave" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-warning" id="summary_leave">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-calendar2-x me-1"></i>Leave</div>
         </div>
     </div>
     <div class="col-6 col-md-2">
-        <div class="card border-0 shadow-sm text-center p-3">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="not_marked" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-secondary" id="summary_not_marked">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-dash-circle me-1"></i>Not Marked</div>
         </div>
@@ -127,6 +127,202 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+// $(document).ready(function() {
+
+//     // ── DataTable Setup ─────────────────────────────────────────────────────
+//     var table = $('#attendanceTable').DataTable({
+//         processing: true,
+//         serverSide: true,
+//         ordering:   true,
+//         order:      [[3, 'asc']],
+//         pageLength: 25,
+//         ajax: {
+//             url:  "{{ route('teacher-attendance.data') }}",
+//             type: 'GET',
+//             data: function(d) {
+//                 d.date = $('#filter_date').val();
+
+//                     d.status_filter = $('#active_status_filter').val() || 'all';
+//             }
+//         },
+//         columns: [
+//             { data: 'DT_RowIndex', orderable: false, searchable: false },
+//             { data: 'photo',        orderable: false, searchable: false },
+//             { data: 'teacher_code', name: 'teacher_code' },
+//             { data: 'name',         name: 'name' },
+//             { data: 'email',        name: 'email' },
+//             { data: 'phone',        name: 'phone' },
+//           { data: 'attendance_date', name: 'attendance_date', orderable: true },
+//             { data: 'check_in_out', name: 'check_in_out', orderable: false, searchable: false },
+//             { data: 'status',       orderable: false, searchable: false },
+
+//         ],
+//         language: {
+//             processing:  '<div class="spinner-border text-primary"></div>',
+//             search:      'Search:',
+//             zeroRecords: 'No teachers found for selected filters.',
+//             info:        'Showing _START_ to _END_ of _TOTAL_ teachers',
+//         }
+//     });
+
+//     if ($('#active_status_filter').length === 0) {
+//         $('body').append('<input type="hidden" id="active_status_filter" value="all">');
+//     }
+
+//     // ── Summary Loader ───────────────────────────────────────────────────────
+//     function loadSummary() {
+//         $.ajax({
+//             url:  "{{ route('teacher-attendance.summary') }}",
+//             type: 'GET',
+//             data: {
+//                 date: $('#filter_date').val()
+//             },
+//             success: function(data) {
+//                 $('#summary_total').text(data.total);
+//                 $('#summary_present').text(data.present);
+//                 $('#summary_absent').text(data.absent);
+//                 $('#summary_halfday').text(data.halfDay);
+//                 $('#summary_leave').text(data.leave);
+//                 $('#summary_not_marked').text(data.notMarked);
+//             }
+//         });
+//     }
+
+
+//      $('.status-card').on('click', function() {
+//         let status = $(this).data('status');
+//         let statusText = $(this).find('.small.text-muted').text().trim();
+
+//         // Remove active class from all cards
+//         $('.status-card').removeClass('border border-primary bg-light shadow-lg');
+
+//         // Add active class to clicked card
+//         $(this).addClass('border border-primary bg-light shadow-lg');
+
+//         // Store active filter
+//         $('#active_status_filter').val(status);
+
+//         // Update filter label text
+//         let displayText = status === 'all' ? 'All Teachers' : statusText;
+//         $('#filter_status_text').text(displayText);
+
+//         // Reload table with filter
+//         table.ajax.reload();
+//     });
+
+//     // ── Apply Filter Button ───────────────────────────────────────────────────
+//     $('#apply_filter_btn').on('click', function() {
+//         let dateVal  = $('#filter_date').val();
+//         let dateDisp = dateVal
+//             ? new Date(dateVal).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
+//             : 'Today';
+//         $('#report_date_label').text('Date: ' + dateDisp);
+//         table.ajax.reload();
+//         loadSummary();
+//     });
+
+//     // ── Edit Attendance Button ────────────────────────────────────────────────
+//     $(document).on('click', '.edit-attendance-btn', function() {
+//         let btn = $(this);
+//         let teacherId = btn.data('teacher-id');
+//         let current = btn.data('current');
+//         let dateVal = btn.data('date') || $('#filter_date').val();
+
+//         let initialCheckIn = btn.data('check-in') || '08:00';
+//         let initialCheckOut = btn.data('check-out') || '14:00';
+
+//         let displayStatus = current === 'none' ? 'Not Marked' : current;
+
+//         Swal.fire({
+//             title: 'Update Teacher Attendance',
+//             html: `
+//                 <div class="text-muted mb-3 small">Date: <strong>${dateVal}</strong> | Current Status: <strong>${displayStatus}</strong></div>
+//                 <div class="mb-3">
+//                     <label class="form-label fw-bold small text-start d-block">Select Attendance Status</label>
+//                     <select id="swal_status" class="form-select">
+//                         <option value="Present" ${current === 'Present' ? 'selected' : ''}>✅ Present</option>
+//                         <option value="Absent" ${current === 'Absent' ? 'selected' : ''}>❌ Absent</option>
+//                         <option value="Leave" ${current === 'Leave' ? 'selected' : ''}>⚠️ Leave</option>
+//                         <option value="Half-Day" ${current === 'Half-Day' ? 'selected' : ''}>⏰ Half-Day</option>
+//                     </select>
+//                 </div>
+
+//                 <div id="swal_time_fields" style="display: ${['Present', 'Half-Day', 'none'].includes(current) || current === 'none' ? 'block' : 'none'};">
+//                     <div class="row g-2">
+//                         <div class="col-6 text-start">
+//                             <label class="form-label small text-muted">Check-In Time</label>
+//                             <input type="time" id="swal_check_in" class="form-control" value="${initialCheckIn}">
+//                         </div>
+//                         <div class="col-6 text-start">
+//                             <label class="form-label small text-muted">Check-Out Time</label>
+//                             <input type="time" id="swal_check_out" class="form-control" value="${initialCheckOut}">
+//                         </div>
+//                     </div>
+//                 </div>
+//             `,
+//             showCancelButton: true,
+//             confirmButtonText: '<i class="bi bi-save me-1"></i> Save',
+//             cancelButtonText: 'Cancel',
+//             confirmButtonColor: '#3085d6',
+//             preConfirm: () => {
+//                 let status = document.getElementById('swal_status').value;
+//                 let checkIn = document.getElementById('swal_check_in').value;
+//                 let checkOut = document.getElementById('swal_check_out').value;
+//                 return { status, checkIn, checkOut };
+//             },
+//             didOpen: () => {
+//                 // Toggle time fields dynamically based on status choice
+//                 document.getElementById('swal_status').addEventListener('change', function() {
+//                     let fields = document.getElementById('swal_time_fields');
+//                     if (['Present', 'Half-Day'].includes(this.value)) {
+//                         $(fields).slideDown();
+//                     } else {
+//                         $(fields).slideUp();
+//                     }
+//                 });
+//             }
+//         }).then((result) => {
+//             if (result.isConfirmed) {
+//                 saveAttendance(result.value.status, result.value.checkIn, result.value.checkOut);
+//             }
+//         });
+
+//         function saveAttendance(status, checkIn, checkOut) {
+//             $.ajax({
+//                 url: "{{ route('teacher-attendance.mark') }}",
+//                 method: 'POST',
+//                 data: {
+//                     _token: '{{ csrf_token() }}',
+//                     teacher_id: teacherId,
+//                     status: status,
+//                     date: dateVal,
+//                     check_in: checkIn,
+//                     check_out: checkOut
+//                 },
+//                 success: function(response) {
+//                     if (response.success) {
+//                         Swal.fire({
+//                             toast: true,
+//                             position: 'top-end',
+//                             icon: 'success',
+//                             title: response.message,
+//                             showConfirmButton: false,
+//                             timer: 2000
+//                         });
+//                         table.ajax.reload(null, false);
+//                         loadSummary();
+//                     }
+//                 },
+//                 error: function(xhr) {
+//                     Swal.fire('Error!', xhr.responseJSON?.message || 'Could not update attendance', 'error');
+//                 }
+//             });
+//         }
+//     });
+
+//     // ── Load Summary on Page Load ─────────────────────────────────────────────
+//     loadSummary();
+// });
 $(document).ready(function() {
 
     // ── DataTable Setup ─────────────────────────────────────────────────────
@@ -141,6 +337,8 @@ $(document).ready(function() {
             type: 'GET',
             data: function(d) {
                 d.date = $('#filter_date').val();
+                // Get active filter status from hidden input
+                d.status_filter = $('#active_status_filter').val() || 'all';
             }
         },
         columns: [
@@ -150,10 +348,9 @@ $(document).ready(function() {
             { data: 'name',         name: 'name' },
             { data: 'email',        name: 'email' },
             { data: 'phone',        name: 'phone' },
-          { data: 'attendance_date', name: 'attendance_date', orderable: true },
+            { data: 'attendance_date', name: 'attendance_date', orderable: true },
             { data: 'check_in_out', name: 'check_in_out', orderable: false, searchable: false },
             { data: 'status',       orderable: false, searchable: false },
-
         ],
         language: {
             processing:  '<div class="spinner-border text-primary"></div>',
@@ -162,6 +359,12 @@ $(document).ready(function() {
             info:        'Showing _START_ to _END_ of _TOTAL_ teachers',
         }
     });
+
+    // ── Hidden input for active filter ──────────────────────────────────────
+    // Add this hidden input in your HTML or create dynamically
+    if ($('#active_status_filter').length === 0) {
+        $('body').append('<input type="hidden" id="active_status_filter" value="all">');
+    }
 
     // ── Summary Loader ───────────────────────────────────────────────────────
     function loadSummary() {
@@ -182,13 +385,41 @@ $(document).ready(function() {
         });
     }
 
-    // ── Apply Filter Button ───────────────────────────────────────────────────
+    // ── Status Card Click Filter ─────────────────────────────────────────────
+    $('.status-card').on('click', function() {
+        let status = $(this).data('status');
+        let statusText = $(this).find('.small.text-muted').text().trim();
+
+        // Remove active class from all cards
+        $('.status-card').removeClass('border border-primary bg-light shadow-lg');
+
+        // Add active class to clicked card
+        $(this).addClass('border border-primary bg-light shadow-lg');
+
+        // Store active filter
+        $('#active_status_filter').val(status);
+
+        // Update filter label text
+        let displayText = status === 'all' ? 'All Teachers' : statusText;
+        $('#filter_status_text').text(displayText);
+
+        // Reload table with filter
+        table.ajax.reload();
+    });
+
+    // ── Apply Date Filter Button ──────────────────────────────────────────────
     $('#apply_filter_btn').on('click', function() {
         let dateVal  = $('#filter_date').val();
         let dateDisp = dateVal
             ? new Date(dateVal).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
             : 'Today';
         $('#report_date_label').text('Date: ' + dateDisp);
+
+        // Reset active filter to 'all' when date changes
+        $('#active_status_filter').val('all');
+        $('.status-card').removeClass('border border-primary bg-light shadow-lg');
+        $('#filter_status_text').text('All Teachers');
+
         table.ajax.reload();
         loadSummary();
     });
@@ -243,7 +474,6 @@ $(document).ready(function() {
                 return { status, checkIn, checkOut };
             },
             didOpen: () => {
-                // Toggle time fields dynamically based on status choice
                 document.getElementById('swal_status').addEventListener('change', function() {
                     let fields = document.getElementById('swal_time_fields');
                     if (['Present', 'Half-Day'].includes(this.value)) {

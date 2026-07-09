@@ -96,6 +96,7 @@ Route::middleware('auth')->group(function () {
     // ============ FEES MODULE ============
     Route::prefix('fees')->name('fees.')->group(function () {
         Route::get('/', [FeesController::class, 'index'])->name('index');
+        Route::get('/summary', [FeesController::class, 'getFeesSummary'])->name('summary');
         Route::get('/data', [FeesController::class, 'getFeesData'])->name('data');
         Route::get('/{studentId}/student-fees', [FeesController::class, 'getStudentFees'])->name('student.fees');
         Route::post('/{studentId}/submit', [FeesController::class, 'submitFee'])->name('submit');

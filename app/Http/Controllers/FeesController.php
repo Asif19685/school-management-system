@@ -22,19 +22,137 @@ class FeesController extends Controller
     }
 
     /**
+     * JSON summary counts of fees for the selected month
+     */
+    public function getFeesSummary(Request $request)
+    {
+        $targetDate = $request->filled('filter_month')
+            ? Carbon::parse($request->input('filter_month'))
+            : now();
+
+        $monthName = $targetDate->format('F Y');
+        $monthYear = $targetDate->format('Y-m');
+        $today = now();
+
+        $admissions = StudentAdmission::with(['student.fees' => function($q) use ($monthName, $monthYear) {
+            $q->where(function($sub) use ($monthName, $monthYear) {
+                $sub->where('fee_type', 'LIKE', "%{$monthName}%")
+                    ->orWhere('due_date', 'LIKE', "{$monthYear}%");
+            });
+        }])
+            ->where('status', 'approved')
+            ->get();
+
+        $totalStudents = $admissions->count();
+        $paid = 0;
+        $pending = 0;
+        $partial = 0;
+        $overdue = 0;
+        $noFee = 0;
+
+        foreach ($admissions as $admission) {
+            $student = $admission->student;
+            if (!$student) {
+                $noFee++;
+                continue;
+            }
+            $fee = $student->fees->first();
+            if (!$fee) {
+                $noFee++;
+                continue;
+            }
+
+            $dueDate = $fee->due_date ? Carbon::parse($fee->due_date) : null;
+            $isLate = ($dueDate && $today->greaterThan($dueDate) && $fee->status !== 'paid');
+
+            if ($fee->status === 'paid') {
+                $paid++;
+            } elseif ($isLate) {
+                $overdue++;
+            } elseif ($fee->status === 'partial') {
+                $partial++;
+            } else {
+                $pending++;
+            }
+        }
+
+        return response()->json(compact('totalStudents', 'paid', 'pending', 'partial', 'overdue', 'noFee'));
+    }
+
+    /**
      * Server-side DataTable: approved students with fee status & actions.
      */
     public function getFeesData(Request $request)
     {
+        $targetDate = $request->filled('filter_month')
+            ? Carbon::parse($request->input('filter_month'))
+            : now();
+
+        $monthName = $targetDate->format('F Y');
+        $monthYear = $targetDate->format('Y-m');
+
         $query = StudentAdmission::with([
             'student.guardian',
             'student.studentImage',
-            'student.fees',
+            'student.fees' => function($q) use ($monthName, $monthYear) {
+                $q->where(function($sub) use ($monthName, $monthYear) {
+                    $sub->where('fee_type', 'LIKE', "%{$monthName}%")
+                        ->orWhere('due_date', 'LIKE', "{$monthYear}%");
+                });
+            },
             'schoolClass',
             'section',
         ])
             ->where('status', 'approved')
             ->select('student_admissions.*');
+
+        $statusFilter = $request->input('status_filter', 'all');
+
+        if ($statusFilter !== 'all') {
+            if ($statusFilter === 'no_fee') {
+                $query->whereDoesntHave('student.fees', function($q) use ($monthName, $monthYear) {
+                    $q->where(function($sub) use ($monthName, $monthYear) {
+                        $sub->where('fee_type', 'LIKE', "%{$monthName}%")
+                            ->orWhere('due_date', 'LIKE', "{$monthYear}%");
+                    });
+                });
+            } elseif ($statusFilter === 'paid') {
+                $query->whereHas('student.fees', function($q) use ($monthName, $monthYear) {
+                    $q->where(function($sub) use ($monthName, $monthYear) {
+                        $sub->where('fee_type', 'LIKE', "%{$monthName}%")
+                            ->orWhere('due_date', 'LIKE', "{$monthYear}%");
+                    })->where('status', 'paid');
+                });
+            } elseif ($statusFilter === 'partial') {
+                $query->whereHas('student.fees', function($q) use ($monthName, $monthYear) {
+                    $q->where(function($sub) use ($monthName, $monthYear) {
+                        $sub->where('fee_type', 'LIKE', "%{$monthName}%")
+                            ->orWhere('due_date', 'LIKE', "{$monthYear}%");
+                    })->where('status', 'partial');
+                });
+            } elseif ($statusFilter === 'overdue') {
+                $query->whereHas('student.fees', function($q) use ($monthName, $monthYear) {
+                    $q->where(function($sub) use ($monthName, $monthYear) {
+                        $sub->where('fee_type', 'LIKE', "%{$monthName}%")
+                            ->orWhere('due_date', 'LIKE', "{$monthYear}%");
+                    })
+                    ->where('status', '!=', 'paid')
+                    ->whereNotNull('due_date')
+                    ->where('due_date', '<', now()->toDateString());
+                });
+            } elseif ($statusFilter === 'pending') {
+                $query->whereHas('student.fees', function($q) use ($monthName, $monthYear) {
+                    $q->where(function($sub) use ($monthName, $monthYear) {
+                        $sub->where('fee_type', 'LIKE', "%{$monthName}%")
+                            ->orWhere('due_date', 'LIKE', "{$monthYear}%");
+                    })
+                    ->where('status', 'pending')
+                    ->where(function($sq) {
+                        $sq->whereNull('due_date')->orWhere('due_date', '>=', now()->toDateString());
+                    });
+                });
+            }
+        }
 
         if ($request->has('search') && !empty($request->search['value'])) {
             $searchValue = $request->search['value'];
@@ -78,21 +196,31 @@ class FeesController extends Controller
             ->addColumn('class', fn ($row) => $row->schoolClass->class_name ?? 'N/A')
             ->addColumn('section', fn ($row) => $row->section->section_name ?? 'N/A')
             ->addColumn('roll_no', fn ($row) => $row->roll_no ?? 'N/A')
-            ->addColumn('fee_status', function ($row) {
+            ->addColumn('fee_status', function ($row) use ($monthName, $monthYear) {
                 if (!$row->student) {
                     return '<span class="badge bg-secondary">N/A</span>';
                 }
 
-                $currentMonth = now()->format('F Y');
                 $fee = $row->student->fees
-                    ->first(fn ($f) => str_contains($f->fee_type ?? '', $currentMonth));
+                    ->first(function ($f) use ($monthName, $monthYear) {
+                        return (str_contains($f->fee_type ?? '', $monthName) || 
+                               ($f->due_date && str_starts_with($f->due_date->format('Y-m-d'), $monthYear)));
+                    });
 
                 if (!$fee) {
                     return '<span class="badge bg-secondary">No Fee</span>';
                 }
 
+                $today = now();
+                $dueDate = $fee->due_date ? Carbon::parse($fee->due_date) : null;
+                $isLate = ($dueDate && $today->greaterThan($dueDate) && $fee->status !== 'paid');
+
                 if ($fee->status === 'paid') {
                     return '<span class="badge bg-success">Paid</span>';
+                }
+
+                if ($isLate) {
+                    return '<span class="badge bg-danger">Overdue</span>';
                 }
 
                 if ($fee->status === 'pending') {
@@ -101,10 +229,6 @@ class FeesController extends Controller
 
                 if ($fee->status === 'partial') {
                     return '<span class="badge bg-info text-dark">Partial</span>';
-                }
-
-                if ($fee->status === 'overdue') {
-                    return '<span class="badge bg-danger">Overdue</span>';
                 }
 
                 return '<span class="badge bg-secondary">' . ucfirst($fee->status) . '</span>';

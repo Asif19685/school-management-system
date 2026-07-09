@@ -19,7 +19,7 @@ class AttendanceController extends Controller
 
     /**
      * Server-Side DataTable: Daily attendance report
-     * Filters: date (default today), class_id
+     * Filters: date (default today), class_id, status_filter
      */
     public function getAttendanceData(Request $request)
     {
@@ -80,15 +80,16 @@ class AttendanceController extends Controller
                         . '<button class="btn btn-sm btn-link p-0 text-muted edit-attendance-btn" data-student-id="' . $studentId . '" data-current="none" data-date="' . $date . '" title="Mark Attendance"><i class="bi bi-pencil-square"></i></button>'
                         . '</div>';
                 }
-                
-                $status = $record->status;
+
+                $status = strtolower($record->status);
                 $badge = match($status) {
-                    'present' => '<span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i>Present</span>',
-                    'absent'  => '<span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i>Absent</span>',
-                    'leave'   => '<span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-calendar2-x me-1"></i>Leave</span>',
-                    default   => '<span class="badge bg-secondary px-3 py-2">' . ucfirst($status) . '</span>',
+                    'present'  => '<span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i>Present</span>',
+                    'absent'   => '<span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i>Absent</span>',
+                    'leave'    => '<span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-calendar2-x me-1"></i>Leave</span>',
+                    'half-day', 'halfday' => '<span class="badge bg-info px-3 py-2"><i class="bi bi-clock me-1"></i>Half-Day</span>',
+                    default    => '<span class="badge bg-secondary px-3 py-2">' . ucfirst($status) . '</span>',
                 };
-                
+
                 return '<div class="d-flex align-items-center justify-content-center gap-2">'
                     . $badge
                     . '<button class="btn btn-sm btn-link p-0 text-muted edit-attendance-btn" data-student-id="' . $studentId . '" data-current="' . $status . '" data-date="' . $date . '" title="Change Attendance"><i class="bi bi-pencil-square"></i></button>'
@@ -121,12 +122,13 @@ class AttendanceController extends Controller
             ->whereDate('attendance_date', $date)
             ->get();
 
-        $present    = $records->where('status', 'present')->count();
-        $absent     = $records->where('status', 'absent')->count();
-        $leave      = $records->where('status', 'leave')->count();
+        $present    = $records->filter(fn($r) => strtolower($r->status) === 'present')->count();
+        $absent     = $records->filter(fn($r) => strtolower($r->status) === 'absent')->count();
+        $leave      = $records->filter(fn($r) => strtolower($r->status) === 'leave')->count();
+        $halfDay    = $records->filter(fn($r) => in_array(strtolower($r->status), ['half-day', 'halfday']))->count();
         $notMarked  = $total - $records->count();
 
-        return response()->json(compact('total', 'present', 'absent', 'leave', 'notMarked'));
+        return response()->json(compact('total', 'present', 'absent', 'leave', 'halfDay', 'notMarked'));
     }
 
     /**
@@ -136,7 +138,7 @@ class AttendanceController extends Controller
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'student_id' => 'required|exists:students,id',
-            'status'     => 'required|in:present,absent,leave',
+            'status'     => 'required|in:present,absent,leave,half-day', // ✅ Added half-day
             'date'       => 'nullable|date_format:Y-m-d',
         ]);
 
@@ -159,9 +161,10 @@ class AttendanceController extends Controller
         );
 
         $messages = [
-            'present' => 'Student marked as Present.',
-            'absent'  => 'Student marked as Absent.',
-            'leave'   => 'Student marked as on Leave.',
+            'present'  => 'Student marked as Present.',
+            'absent'   => 'Student marked as Absent.',
+            'leave'    => 'Student marked as on Leave.',
+            'half-day' => 'Student marked as Half-Day.', // ✅ Added half-day message
         ];
 
         return response()->json([

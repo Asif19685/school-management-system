@@ -51,31 +51,66 @@
     </div>
 </div>
 
+{{-- ── Hidden Input for Active Filter ─────────────────────────────────────── --}}
+<input type="hidden" id="active_status_filter" value="all">
+
 {{-- ── Summary Cards ─────────────────────────────────────────────────────── --}}
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm text-center p-3">
+    <!-- Total Students Card -->
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="all" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-primary" id="summary_total">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-people me-1"></i>Total Students</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm text-center p-3">
+
+    <!-- Present Card -->
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="present" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-success" id="summary_present">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-check-circle me-1"></i>Present</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm text-center p-3">
+
+    <!-- Absent Card -->
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="absent" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-danger" id="summary_absent">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-x-circle me-1"></i>Absent</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm text-center p-3">
+
+    <!-- Leave Card -->
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="leave" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-warning" id="summary_leave">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-calendar2-x me-1"></i>Leave</div>
+        </div>
+    </div>
+
+    <!-- Half-Day Card -->
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="half-day" style="cursor: pointer;">
+            <div class="fs-2 fw-bold text-info" id="summary_halfday">–</div>
+            <div class="small text-muted fw-semibold mt-1"><i class="bi bi-clock me-1"></i>Half-Day</div>
+        </div>
+    </div>
+
+    <!-- Not Marked Card -->
+    <div class="col-6 col-md-2">
+        <div class="card border-0 shadow-sm text-center p-3 status-card" data-status="not_marked" style="cursor: pointer;">
             <div class="fs-2 fw-bold text-secondary" id="summary_not_marked">–</div>
             <div class="small text-muted fw-semibold mt-1"><i class="bi bi-dash-circle me-1"></i>Not Marked</div>
         </div>
+    </div>
+</div>
+
+{{-- ── Active Filter Label ─────────────────────────────────────────────────── --}}
+<div class="row mb-3">
+    <div class="col-12">
+        <span id="active_filter_label" class="badge bg-info text-white p-2">
+            <i class="bi bi-funnel me-1"></i> Filter: <span id="filter_status_text">All Students</span>
+        </span>
     </div>
 </div>
 
@@ -136,6 +171,7 @@ $(document).ready(function() {
             data: function(d) {
                 d.date     = $('#filter_date').val();
                 d.class_id = $('#filter_class').val();
+                d.status_filter = $('#active_status_filter').val() || 'all';
             }
         },
         columns: [
@@ -165,13 +201,40 @@ $(document).ready(function() {
                 class_id: $('#filter_class').val()
             },
             success: function(data) {
-                $('#summary_total').text(data.total);
-                $('#summary_present').text(data.present);
-                $('#summary_absent').text(data.absent);
-                $('#summary_not_marked').text(data.notMarked);
+                $('#summary_total').text(data.total || 0);
+                $('#summary_present').text(data.present || 0);
+                $('#summary_absent').text(data.absent || 0);
+                $('#summary_leave').text(data.leave || 0);
+                $('#summary_halfday').text(data.halfDay || 0);
+                $('#summary_not_marked').text(data.notMarked || 0);
+            },
+            error: function() {
+                console.log('Error loading summary');
             }
         });
     }
+
+    // ── Status Card Click Filter ─────────────────────────────────────────────
+    $('.status-card').on('click', function() {
+        let status = $(this).data('status');
+        let statusText = $(this).find('.small.text-muted').text().trim();
+
+        // Remove active class from all cards
+        $('.status-card').removeClass('border border-primary bg-light shadow-lg');
+
+        // Add active class to clicked card
+        $(this).addClass('border border-primary bg-light shadow-lg');
+
+        // Store active filter
+        $('#active_status_filter').val(status);
+
+        // Update filter label text
+        let displayText = status === 'all' ? 'All Students' : statusText;
+        $('#filter_status_text').text(displayText);
+
+        // Reload table with filter
+        table.ajax.reload();
+    });
 
     // ── Apply filter button ───────────────────────────────────────────────────
     $('#apply_filter_btn').on('click', function() {
@@ -180,8 +243,21 @@ $(document).ready(function() {
             ? new Date(dateVal).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
             : 'Today';
         $('#report_date_label').text('Date: ' + dateDisp);
+
+        // Reset filter when date/class changes
+        $('#active_status_filter').val('all');
+        $('.status-card').removeClass('border border-primary bg-light shadow-lg');
+        $('#filter_status_text').text('All Students');
+
         table.ajax.reload();
         loadSummary();
+    });
+
+    // ── Class filter change par bhi reset karein ─────────────────────────────
+    $('#filter_class').on('change', function() {
+        $('#active_status_filter').val('all');
+        $('.status-card').removeClass('border border-primary bg-light shadow-lg');
+        $('#filter_status_text').text('All Students');
     });
 
     // ── Edit attendance button ────────────────────────────────────────────────
@@ -201,6 +277,7 @@ $(document).ready(function() {
                     <button id="sa-present-btn" class="btn btn-success py-2"><i class="bi bi-check-circle me-1"></i> Mark Present</button>
                     <button id="sa-absent-btn" class="btn btn-danger py-2"><i class="bi bi-x-circle me-1"></i> Mark Absent</button>
                     <button id="sa-leave-btn" class="btn btn-warning py-2 text-dark"><i class="bi bi-calendar2-x me-1"></i> Mark Leave</button>
+                    <button id="sa-halfday-btn" class="btn btn-info py-2 text-white"><i class="bi bi-clock me-1"></i> Mark Half-Day</button>
                 </div>
             `,
             showConfirmButton: false,
@@ -208,20 +285,25 @@ $(document).ready(function() {
             cancelButtonText: 'Cancel',
             didOpen: () => {
                 const content = Swal.getHtmlContainer();
-                
+
                 content.querySelector('#sa-present-btn').addEventListener('click', () => {
                     Swal.close();
                     saveAttendance('present');
                 });
-                
+
                 content.querySelector('#sa-absent-btn').addEventListener('click', () => {
                     Swal.close();
                     saveAttendance('absent');
                 });
-                
+
                 content.querySelector('#sa-leave-btn').addEventListener('click', () => {
                     Swal.close();
                     saveAttendance('leave');
+                });
+
+                content.querySelector('#sa-halfday-btn').addEventListener('click', () => {
+                    Swal.close();
+                    saveAttendance('half-day');
                 });
             }
         });
