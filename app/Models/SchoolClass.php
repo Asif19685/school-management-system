@@ -28,4 +28,16 @@ class SchoolClass extends Model
     {
         return $this->hasMany(Exam::class, 'class_id');
     }
+
+    /** Promotions where this class is the target */
+    public function promotedStudents(): HasMany
+    {
+        return $this->hasMany(StudentPromotion::class, 'to_class_id');
+    }
+
+    /** Promotions where this class is the source */
+    public function promotedFromStudents(): HasMany
+    {
+        return $this->hasMany(StudentPromotion::class, 'from_class_id');
+    }
 }

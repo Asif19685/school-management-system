@@ -116,12 +116,16 @@ public function getStudentsData(Request $request)
         // ➤ ACTIONS COLUMN - View Button
         // ════════════════════════════════════════════════════════════════
         ->addColumn('actions', function ($row) {
+            $studentId = $row->student ? $row->student->id : 0;
             return '
-                 <button class="btn btn-sm btn-outline-info view-student-btn-no-fee me-1"
+                 <button class="btn btn-sm btn-outline-info view-student-btn-no-fee me-1 mb-1"
                 data-id="' . $row->id . '"
                 title="View Profile">
             <i class="bi bi-eye"></i> View Profile
         </button>
+        <a href="/promotions/' . $studentId . '/history" class="btn btn-sm btn-outline-primary me-1 mb-1" title="View History">
+            <i class="bi bi-clock-history"></i> History
+        </a>
             ';
         })
 

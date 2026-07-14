@@ -1,3 +1,5 @@
+<?php
+
 use App\Console\Commands\GenerateMonthlyFees;
 use App\Console\Commands\MarkDailyAttendance;
 use Illuminate\Foundation\Inspiring;

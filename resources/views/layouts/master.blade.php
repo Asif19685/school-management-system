@@ -81,6 +81,16 @@
     </div>
 </li>
 
+<!-- Promotions Module -->
+<li>
+    <a href="{{ route('promotions.index') }}"
+       class="list-group-item list-group-item-action d-flex align-items-center {{ request()->is('promotions*') ? 'active' : '' }}">
+        <span>
+            <i class="bi bi-rocket-takeoff"></i> Promotions
+        </span>
+    </a>
+</li>
+
 <!-- Students Module -->
 <li>
     <a href="#collapse-students"

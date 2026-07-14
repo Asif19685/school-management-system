@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdmissionsController;
+use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\VisitorsController;
 use App\Http\Controllers\CoursesController;
@@ -74,6 +75,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [StudentsController::class, 'index'])->name('index');
         Route::get('/data', [StudentsController::class, 'getStudentsData'])->name('data');
         Route::post('/attendance/mark', [StudentsController::class, 'markAttendance'])->name('attendance.mark');
+    });
+
+    // ============ PROMOTIONS MODULE ============
+    Route::prefix('promotions')->name('promotions.')->group(function () {
+        Route::get('/', [PromotionController::class, 'index'])->name('index');
+        Route::get('/fetch', [PromotionController::class, 'fetchStudents'])->name('fetch');
+        Route::post('/promote', [PromotionController::class, 'promote'])->name('promote');
+        // NOTE: specific static routes MUST come before wildcard routes
+        Route::get('/sections/{class_id}', [PromotionController::class, 'getSectionsByClass'])->name('sections');
+        Route::get('/{student_id}/history', [PromotionController::class, 'history'])->name('history');
     });
 
     // ============ TEACHERS MODULE ============

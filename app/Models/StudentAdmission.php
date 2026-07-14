@@ -17,7 +17,7 @@ class StudentAdmission extends Model
         'admission_no',
         'class_id',
         'section_id',
-
+        'academic_year',
         'admission_date',
         'status',
         'remarks',
@@ -53,5 +53,15 @@ class StudentAdmission extends Model
      public function fees(): HasMany
     {
         return $this->hasMany(Fee::class, 'student_id', 'student_id');
+    }
+
+    // Helper method to get current promotion record
+    public function getCurrentPromotionAttribute()
+    {
+        return $this->student->promotions()
+            ->where('to_class_id', $this->class_id)
+            ->where('to_section_id', $this->section_id)
+            ->latest('promotion_date')
+            ->first();
     }
 }

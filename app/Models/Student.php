@@ -87,4 +87,66 @@ class Student extends Model
     {
         return $this->hasOne(StudentImage::class, 'student_id');
     }
+
+    // Promotions History (All promotions)
+    public function promotions(): HasMany
+    {
+        return $this->hasMany(StudentPromotion::class)->orderBy('promotion_date', 'desc');
+    }
+
+    // Latest Promotion (Current class info)
+    public function latestPromotion(): HasOne
+    {
+        return $this->hasOne(StudentPromotion::class)->latest('promotion_date');
+    }
+
+    // Current Class (through admission)
+    public function currentClass()
+    {
+        return $this->hasOneThrough(
+            SchoolClass::class,
+            StudentAdmission::class,
+            'student_id', // Foreign key on student_admissions
+            'id',         // Foreign key on classes
+            'id',         // Local key on students
+            'class_id'    // Local key on student_admissions
+        );
+    }
+
+    // Current Section (through admission)
+    public function currentSection()
+    {
+        return $this->hasOneThrough(
+            Section::class,
+            StudentAdmission::class,
+            'student_id', // Foreign key on student_admissions
+            'id',         // Foreign key on sections
+            'id',         // Local key on students
+            'section_id'  // Local key on student_admissions
+        );
+    }
+
+    // Get complete student summary with history
+    public function getCompleteSummaryAttribute()
+    {
+        $admission = $this->admission;
+        $promotions = $this->promotions()->with(['fromClass', 'toClass', 'fromSection', 'toSection'])->get();
+
+        return [
+            'student' => $this,
+            'current_class' => $admission ? $admission->schoolClass->class_name : null,
+            'current_section' => $admission ? $admission->section->section_name : null,
+            'admission' => $admission,
+            'promotion_history' => $promotions->map(function ($promo) {
+                return [
+                    'from_class' => $promo->fromClass?->class_name,
+                    'to_class' => $promo->toClass?->class_name,
+                    'academic_year' => $promo->academic_year,
+                    'promotion_date' => $promo->promotion_date,
+                    'status' => $promo->status,
+                    'remarks' => $promo->remarks,
+                ];
+            }),
+        ];
+    }
 }
