@@ -16,6 +16,7 @@ use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\VisitorsController;
 use App\Http\Controllers\CoursesController;
+use App\Http\Controllers\SubjectsController;
 use App\Http\Controllers\FeesController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ExamsController;
@@ -98,10 +99,20 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [TeachersController::class, 'destroy'])->name('destroy');
     });
 
-    // ============ COURSES MODULE ============
-    Route::prefix('courses')->name('courses.')->group(function () {
-        Route::get('/', [CoursesController::class, 'index'])->name('index');
-        Route::get('/data', [CoursesController::class, 'getCoursesData'])->name('data');
+    // ============ COURSES MODULE (Hidden — School mein use nahi) ============
+    // Route::prefix('courses')->name('courses.')->group(function () {
+    //     Route::get('/', [CoursesController::class, 'index'])->name('index');
+    //     Route::get('/data', [CoursesController::class, 'getCoursesData'])->name('data');
+    // });
+
+    // ============ SUBJECTS MODULE ============
+    Route::prefix('subjects')->name('subjects.')->group(function () {
+        Route::get('/', [SubjectsController::class, 'index'])->name('index');
+        Route::get('/data', [SubjectsController::class, 'getData'])->name('data');
+        Route::get('/by-class/{classId}', [SubjectsController::class, 'getByClass'])->name('by-class');
+        Route::post('/', [SubjectsController::class, 'store'])->name('store');
+        Route::put('/{id}', [SubjectsController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SubjectsController::class, 'destroy'])->name('destroy');
     });
 
     // ============ FEES MODULE ============
@@ -154,6 +165,27 @@ Route::middleware('auth')->group(function () {
     Route::prefix('exams')->name('exams.')->group(function () {
         Route::get('/', [ExamsController::class, 'index'])->name('index');
         Route::get('/data', [ExamsController::class, 'getExamsData'])->name('data');
+        Route::post('/', [ExamsController::class, 'store'])->name('store');
+        Route::put('/{id}', [ExamsController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ExamsController::class, 'destroy'])->name('destroy');
+        
+        // AJAX: Get subjects by class
+        Route::get('/subjects-by-class/{classId}', [ExamsController::class, 'getSubjectsByClass'])->name('subjects-by-class');
+        
+        // Subject-wise Marks Entry
+        Route::get('/subject-marks', [ExamsController::class, 'subjectMarks'])->name('subject-marks');
+        Route::post('/subject-marks/fetch', [ExamsController::class, 'fetchSubjectMarks'])->name('subject-marks.fetch');
+        Route::post('/subject-marks/save', [ExamsController::class, 'saveSubjectMarks'])->name('subject-marks.save');
+        
+        // Final Results
+        Route::get('/final-results', [ExamsController::class, 'finalResults'])->name('final-results');
+        Route::post('/final-results/fetch', [ExamsController::class, 'fetchFinalResults'])->name('final-results.fetch');
+        Route::post('/final-results/save', [ExamsController::class, 'saveFinalResults'])->name('final-results.save');
+        
+        // Result Cards
+        Route::get('/result-cards', [ExamsController::class, 'resultCards'])->name('result-cards');
+        Route::post('/result-cards/fetch', [ExamsController::class, 'fetchResultCards'])->name('result-cards.fetch');
+        Route::get('/result-cards/print/{exam_id}/{student_id}', [ExamsController::class, 'printResultCard'])->name('result-cards.print');
     });
 
     // ============ NOTIFICATIONS MODULE ============

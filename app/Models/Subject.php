@@ -5,22 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\SubjectResult;
 
 class Subject extends Model
 {
     protected $table = 'subjects';
 
-    protected $fillable = ['course_id', 'subject_name', 'subject_code'];
+    protected $fillable = [
+        'class_id',
+        'subject_name',
+        'subject_code',
+        'total_marks',
+        'pass_marks',
+    ];
 
-    /** Subject belongs to a course */
-    public function course(): BelongsTo
+    /** Subject belongs to a school class */
+    public function schoolClass(): BelongsTo
     {
-        return $this->belongsTo(Course::class, 'course_id');
+        return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
-    /** Subject has many exam results */
-    public function examResults(): HasMany
+    /** Subject has many subject results */
+    public function subjectResults(): HasMany
     {
-        return $this->hasMany(ExamResult::class, 'subject_id');
+        return $this->hasMany(SubjectResult::class, 'subject_id');
     }
 }

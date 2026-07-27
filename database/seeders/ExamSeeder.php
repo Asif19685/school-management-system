@@ -13,11 +13,9 @@ class ExamSeeder extends Seeder
         $classIds = DB::table('classes')->pluck('id')->all();
 
         $exams = [
-            ['exam_name' => 'Monthly Test - June',  'days_offset' => -5,  'total_marks' => 50],
-            ['exam_name' => 'Mid Term Exam',         'days_offset' => 10,  'total_marks' => 100],
-            ['exam_name' => 'Final Term Exam',       'days_offset' => 60,  'total_marks' => 100],
-            ['exam_name' => 'Monthly Test - May',    'days_offset' => -35, 'total_marks' => 50],
-            ['exam_name' => '1st Unit Test',         'days_offset' => -60, 'total_marks' => 25],
+            ['exam_name' => 'Monthly Test - June',  'days_offset' => -5,  'exam_type' => 'monthly_test'],
+            ['exam_name' => 'Mid Term Exam',         'days_offset' => 10,  'exam_type' => 'mid_term'],
+            ['exam_name' => 'Final Term Exam',       'days_offset' => 60,  'exam_type' => 'final_term'],
         ];
 
         $count = 0;
@@ -25,9 +23,10 @@ class ExamSeeder extends Seeder
             foreach ($classIds as $classId) {
                 DB::table('exams')->insert([
                     'exam_name'   => $exam['exam_name'],
+                    'exam_type'   => $exam['exam_type'],
+                    'academic_year' => (int) date('Y'),
                     'class_id'    => $classId,
                     'exam_date'   => now()->addDays($exam['days_offset'])->toDateString(),
-                    'total_marks' => $exam['total_marks'],
                     'created_at'  => $now,
                     'updated_at'  => $now,
                 ]);

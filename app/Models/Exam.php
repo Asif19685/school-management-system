@@ -12,13 +12,15 @@ class Exam extends Model
 
     protected $fillable = [
         'exam_name',
+        'exam_type',
+        'academic_year',
         'class_id',
         'exam_date',
-        'total_marks',
     ];
 
     protected $casts = [
         'exam_date' => 'date',
+        'academic_year' => 'integer',
     ];
 
     /** Exam belongs to a class */
@@ -27,9 +29,15 @@ class Exam extends Model
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
-    /** Exam has many results */
-    public function results(): HasMany
+    /** Exam has many subject results */
+    public function subjectResults(): HasMany
     {
-        return $this->hasMany(ExamResult::class, 'exam_id');
+        return $this->hasMany(SubjectResult::class, 'exam_id');
+    }
+
+    /** Exam has many final results */
+    public function finalResults(): HasMany
+    {
+        return $this->hasMany(FinalResult::class, 'exam_id');
     }
 }

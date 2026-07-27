@@ -41,6 +41,32 @@
                 </div>
             </div>
 
+            <!-- EXAMS MODULE -->
+            <div x-data="{ open: {{ request()->is('exams*') ? 'true' : 'false' }} }">
+                <button @click="open = !open"
+                    class="w-full flex items-center justify-between rounded px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 focus:outline-none {{ request()->is('exams*') ? 'bg-slate-800 text-white font-medium' : '' }}">
+                    <span class="flex items-center">
+                        <i class="bi bi-journal-check me-2"></i> Exams
+                    </span>
+                    <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="open ? 'transform rotate-180' : ''"></i>
+                </button>
+
+                <div x-show="open" x-cloak class="pl-6 mt-1 space-y-1" x-transition>
+                    <a href="{{ route('exams.index') }}"
+                        class="block rounded px-3 py-1.5 text-xs {{ request()->routeIs('exams.index') ? 'bg-slate-700 text-white font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="bi bi-sliders me-1.5"></i> Manage Exams
+                    </a>
+                    <a href="{{ route('exams.subject-marks') }}"
+                        class="block rounded px-3 py-1.5 text-xs {{ request()->routeIs('exams.subject-marks') ? 'bg-slate-700 text-white font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="bi bi-pencil-square me-1.5"></i> Subject Marks
+                    </a>
+                    <a href="{{ route('exams.final-results') }}"
+                        class="block rounded px-3 py-1.5 text-xs {{ request()->routeIs('exams.final-results') ? 'bg-slate-700 text-white font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="bi bi-award me-1.5"></i> Final Results
+                    </a>
+                </div>
+            </div>
+
             </nav>
     </div>
 

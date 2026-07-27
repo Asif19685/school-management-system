@@ -27,7 +27,8 @@ class DatabaseSeeder extends Seeder
             'visitors',
             'fee_payments',
             'fees',
-            'exam_results',
+            'subject_results',
+            'final_results',
             'exams',
             'attendance',
             'student_admissions',  // Note: plural as per your migration
@@ -75,7 +76,7 @@ class DatabaseSeeder extends Seeder
             // 4. Operations (depend on students, classes, exams, etc.)
             AttendanceSeeder::class,
             ExamSeeder::class,
-            ExamResultSeeder::class,
+            // ExamResultSeeder::class,
             FeeSeeder::class,
             FeePaymentSeeder::class,
             VisitorSeeder::class,

@@ -237,6 +237,7 @@ $(document).ready(function() {
             url: "{{ route('promotions.fetch') }}",
             method: 'GET',
             data: { class_id: classId, section_id: sectionId },
+            cache: false,
             success: function(response) {
                 Swal.close();
                 const tbody = $('#studentsBody');

@@ -75,7 +75,7 @@ class Student extends Model
 
     public function examResults(): HasMany
     {
-        return $this->hasMany(ExamResult::class, 'student_id');
+        return $this->hasMany(Exam::class, 'student_id');
     }
 
     public function issuedBooks(): HasMany
@@ -99,6 +99,28 @@ class Student extends Model
     {
         return $this->hasOne(StudentPromotion::class)->latest('promotion_date');
     }
+// In App\Models\Student.php
+
+/**
+ * Get the final results for the student
+ */
+public function finalResult()
+{
+    return $this->hasMany(FinalResult::class, 'student_id');
+}
+
+/**
+ * Get the final result for a specific exam
+ */
+public function getFinalResultForExam($examId, $classId)
+{
+    return $this->finalResult()
+        ->where('exam_id', $examId)
+        ->where('class_id', $classId)
+        ->first();
+}
+
+
 
     // Current Class (through admission)
     public function currentClass()

@@ -23,6 +23,12 @@ class SchoolClass extends Model
         return $this->hasMany(Student::class, 'class_id');
     }
 
+    /** One class has many subjects */
+    public function subjects(): HasMany
+    {
+        return $this->hasMany(Subject::class, 'class_id');
+    }
+
     /** One class has many exams */
     public function exams(): HasMany
     {

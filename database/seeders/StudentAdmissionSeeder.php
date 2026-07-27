@@ -23,7 +23,6 @@ class StudentAdmissionSeeder extends Seeder
         $admissions = [
             [
                 'student_id' => $studentIds[0] ?? null,
-                'school_name_required' => 'The City School, Karachi',
                 'applied_class_id' => $classIds[0] ?? null,
                 'admission_no' => 'ADM-2024-0001',
                 'class_id' => $classIds[0] ?? null,
@@ -37,7 +36,6 @@ class StudentAdmissionSeeder extends Seeder
             ],
             [
                 'student_id' => $studentIds[1] ?? null,
-                'school_name_required' => 'Lahore Grammar School, Lahore',
                 'applied_class_id' => $classIds[1] ?? null,
                 'admission_no' => 'ADM-2024-0002',
                 'class_id' => $classIds[1] ?? null,
@@ -51,7 +49,6 @@ class StudentAdmissionSeeder extends Seeder
             ],
             [
                 'student_id' => $studentIds[2] ?? null,
-                'school_name_required' => 'Beaconhouse School System',
                 'applied_class_id' => $classIds[2] ?? null,
                 'admission_no' => 'ADM-2024-0003',
                 'class_id' => $classIds[2] ?? null,
@@ -65,7 +62,6 @@ class StudentAdmissionSeeder extends Seeder
             ],
             [
                 'student_id' => $studentIds[3] ?? null,
-                'school_name_required' => 'Roots Millennium School',
                 'applied_class_id' => $classIds[0] ?? null,
                 'admission_no' => 'ADM-2024-0004',
                 'class_id' => $classIds[0] ?? null,
@@ -79,7 +75,6 @@ class StudentAdmissionSeeder extends Seeder
             ],
             [
                 'student_id' => $studentIds[4] ?? null,
-                'school_name_required' => 'Army Public School',
                 'applied_class_id' => $classIds[1] ?? null,
                 'admission_no' => 'ADM-2024-0005',
                 'class_id' => $classIds[1] ?? null,
@@ -93,7 +88,6 @@ class StudentAdmissionSeeder extends Seeder
             ],
             [
                 'student_id' => $studentIds[5] ?? null,
-                'school_name_required' => 'The Educators',
                 'applied_class_id' => $classIds[2] ?? null,
                 'admission_no' => 'ADM-2024-0006',
                 'class_id' => $classIds[2] ?? null,

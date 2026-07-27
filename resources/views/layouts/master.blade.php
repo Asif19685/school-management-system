@@ -167,43 +167,55 @@
     </div>
 </li>
 
-<!-- Courses Module -->
+<!-- Subjects Module -->
 <li>
-    <a href="#collapse-courses"
+    <a href="#collapse-subjects"
        data-bs-toggle="collapse"
        role="button"
-       aria-expanded="{{ request()->is('courses*') ? 'true' : 'false' }}"
-       aria-controls="collapse-courses"
-       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('courses*') ? 'active' : '' }}">
+       aria-expanded="{{ request()->is('subjects*') ? 'true' : 'false' }}"
+       aria-controls="collapse-subjects"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('subjects*') ? 'active' : '' }}">
         <span>
-            <i class="bi bi-book"></i> Courses
+            <i class="bi bi-journal-bookmark-fill"></i> Subjects
         </span>
         <i class="bi bi-chevron-down toggle-icon ms-2 small"></i>
     </a>
-    <div class="collapse {{ request()->is('courses*') ? 'show' : '' }}" id="collapse-courses">
+    <div class="collapse {{ request()->is('subjects*') ? 'show' : '' }}" id="collapse-subjects">
         <ul class="list-group submenu-list" style="list-style: none; padding-left: 0;">
             <li>
-                <a href="#"
-                   data-bs-toggle="modal" data-bs-target="#createCourseModal"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0">
-                    <i class="bi bi-plus-circle-fill me-2" style="font-size: 0.8rem;"></i> Create
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('courses.index') }}"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('courses.index') ? 'active fw-bold' : '' }}">
-                    <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Course List
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('courses.index') }}?view=reports"
-                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->get('view') === 'reports' ? 'active fw-bold' : '' }}">
-                    <i class="bi bi-file-earmark-bar-graph me-2" style="font-size: 0.8rem;"></i> Reports
+                <a href="{{ route('subjects.index') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('subjects.index') ? 'active fw-bold' : '' }}">
+                    <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Subject List
                 </a>
             </li>
         </ul>
     </div>
 </li>
+
+{{-- <!-- Exams Module -->
+<li>
+    <a href="#collapse-exams"
+       data-bs-toggle="collapse"
+       role="button"
+       aria-expanded="{{ request()->is('exams*') ? 'true' : 'false' }}"
+       aria-controls="collapse-exams"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ request()->is('exams*') ? 'active' : '' }}">
+        <span>
+            <i class="bi bi-pencil-square"></i> Examinations
+        </span>
+        <i class="bi bi-chevron-down toggle-icon ms-2 small"></i>
+    </a>
+    <div class="collapse {{ request()->is('exams*') ? 'show' : '' }}" id="collapse-exams">
+        <ul class="list-group submenu-list" style="list-style: none; padding-left: 0;">
+            <li>
+                <a href="{{ route('exams.index') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('exams.index') ? 'active fw-bold' : '' }}">
+                    <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Exam List
+                </a>
+            </li>
+        </ul>
+    </div>
+</li> --}}
 
 <!-- Fees Module -->
 <li>
@@ -337,6 +349,12 @@
                 <a href="{{ route('exams.index') }}"
                    class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('exams.index') ? 'active fw-bold' : '' }}">
                     <i class="bi bi-sliders me-2" style="font-size: 0.8rem;"></i> Exam List
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('exams.result-cards') }}"
+                   class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 {{ request()->routeIs('exams.result-cards') ? 'active fw-bold' : '' }}">
+                    <i class="bi bi-card-heading me-2" style="font-size: 0.8rem;"></i> Result Cards
                 </a>
             </li>
             <li>
